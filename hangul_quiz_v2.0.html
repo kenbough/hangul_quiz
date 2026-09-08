@@ -1,0 +1,1862 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>한글 퀴즈 | ハングル学習クイズ</title>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gen-interface-jp@0.8.0/cdn/400.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#FAFAF7;
+    --stage:#FAFAF7;
+    --paper:#FAFAF7;
+    --ink:#171717;
+    --ink-soft:#4F4F4F;
+    --muted:#858585;
+    --line:#8A8A84;
+    --line-light:#D7D7D1;
+    --success:#376149;
+    --success-soft:#EEF4F0;
+    --danger:#9B4945;
+    --danger-soft:#F8EFEE;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    min-height:100vh;
+    color:var(--ink);
+    font-family:"Gen Interface JP",sans-serif;
+    font-weight:400;
+    -webkit-font-smoothing:antialiased;
+    text-rendering:geometricPrecision;
+    background:var(--bg);
+  }
+  .kr{font-family:'Noto Sans KR',sans-serif;}
+  #app{max-width:980px;margin:0 auto;padding:40px 24px 80px;}
+
+  /* shell */
+  .save-error-banner{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;background:var(--danger-soft);color:var(--danger);border:1px solid rgba(155,73,69,.22);padding:12px 14px;font-size:12px;line-height:1.7;margin:0 28px 16px;}
+  .save-error-banner button{border:0;background:transparent;color:inherit;cursor:pointer;font:inherit;padding:0;}
+  .topbar{position:relative;z-index:2;margin-left:28px;margin-bottom:-22px;pointer-events:none;}
+  .brand{display:inline-flex;background:var(--stage);padding:0 28px 0 0;}
+  .brand .kr-title{font-family:'Noto Sans KR',sans-serif;font-weight:500;font-size:36px;line-height:1;letter-spacing:-.045em;}
+  .brand .sub{display:none;}
+
+  /* generic */
+  .card{background:transparent;border:1px solid var(--line-light);padding:28px;border-radius:6px;}
+  .btn{appearance:none;font-family:inherit;font-weight:400;font-size:13px;color:var(--ink);background:transparent;border:1px solid var(--line);padding:10px 14px;cursor:pointer;border-radius:4px;transition:background .15s ease,color .15s ease,border-color .15s ease;}
+  .btn:hover{background:var(--ink);color:#fff;border-color:var(--ink);}
+  .btn:active{transform:translateY(1px);}
+  .btn:focus-visible{outline:2px solid var(--ink);outline-offset:2px;}
+  .btn-primary{background:var(--ink);color:#fff;border-color:var(--ink);}
+  .btn-primary:hover{background:#343434;border-color:#343434;}
+  .btn-primary:disabled{background:#BDBDB7;color:#fff;border-color:#BDBDB7;cursor:not-allowed;}
+  .btn-ghost,.btn-danger-ghost{background:transparent;border:0;padding:4px 0;text-decoration:none;font-size:11px;color:var(--ink-soft);cursor:pointer;}
+  .btn-danger-ghost{color:var(--ink-soft);}
+  .btn-danger{background:var(--danger);border-color:var(--danger);color:#fff;}
+  .row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+  .between{display:flex;align-items:center;justify-content:space-between;}
+  .eyebrow{font-size:11px;letter-spacing:.12em;color:var(--muted);font-weight:400;}
+  h2.title{font-size:27px;line-height:1.2;letter-spacing:-.03em;margin:0 0 10px;font-weight:400;}
+  p.desc{font-size:13px;color:var(--ink-soft);margin:0 0 22px;line-height:1.8;}
+  .back-link{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--ink-soft);cursor:pointer;text-decoration:none;padding:0;border:0;background:transparent;}
+  .back-link:hover{color:var(--ink);}
+  .section-topbar{display:flex;justify-content:flex-end;align-items:center;margin-bottom:18px;}
+
+  /* HOME — based on supplied comp */
+  .home-stage{background:transparent;padding:112px 28px 78px;min-height:650px;}
+  .home-inner{max-width:860px;margin:0 auto;}
+  .home-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:28px;margin-bottom:108px;}
+  .home-stat{display:grid;grid-template-columns:1fr auto auto;align-items:end;gap:10px;padding:0 8px 10px;border-bottom:1px solid #A6A6A0;min-height:60px;}
+  .home-stat-label{font-size:13px;line-height:1.2;color:var(--ink);align-self:end;padding-bottom:3px;}
+  .home-stat-number{font-size:42px;line-height:.9;letter-spacing:-.045em;font-variant-numeric:tabular-nums;}
+  .home-stat-unit{font-size:12px;line-height:1;color:var(--ink);padding-bottom:3px;min-width:18px;}
+  .home-grid{display:grid;grid-template-columns:1fr 1fr;gap:22px;margin:0;}
+  .mode-card{position:relative;display:flex;align-items:center;min-height:156px;background:transparent;border:1px solid #3F3A38;border-radius:6px;padding:30px 34px;cursor:pointer;transition:background .15s ease,border-color .15s ease,color .15s ease;}
+  .mode-card:hover{background:#D6D4CF;border-color:#4F4F4C;color:var(--ink);}
+  .mode-card:hover .mode-jp,.mode-card:hover .mode-count{color:var(--ink);}
+  .mode-row{display:flex;align-items:flex-end;justify-content:space-between;width:100%;}
+  .mode-copy{display:flex;flex-direction:column;justify-content:center;}
+  .mode-kr{font-family:'Noto Sans KR',sans-serif;font-size:38px;font-weight:400;line-height:1;letter-spacing:-.04em;margin-bottom:18px;}
+  .mode-jp{font-size:14px;color:var(--ink);line-height:1;}
+  .mode-count{font-size:15px;line-height:1;color:var(--ink);font-variant-numeric:tabular-nums;}
+  .home-tools{display:flex;justify-content:flex-end;align-items:center;gap:18px;margin:16px 0 0;padding:0 4px;font-size:11px;}
+  .home-empty-note{font-size:11px;color:var(--muted);margin:18px 0 0;}
+
+  .status-panel{display:none;}
+  .stats-row{display:none;}
+  .reset-confirm{display:flex;align-items:center;gap:8px;color:var(--danger);font-size:11px;}
+  .backup-textarea{width:100%;min-height:110px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px;line-height:1.6;padding:12px;border:1px solid var(--line-light);background:#fff;color:var(--ink-soft);resize:vertical;border-radius:4px;}
+  .backup-reminder{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;background:#F4F4F1;border:1px solid var(--line-light);padding:12px 14px;margin:18px 0;font-size:12px;color:var(--ink-soft);border-radius:4px;}
+
+  /* manage / selection */
+  .manage-shell,.word-shell,.result-shell{background:transparent;padding:54px 44px 52px;}
+  .manage-shell .card,.word-shell .card,.result-shell .card{background:transparent;border:0;padding:0;}
+  .item-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(86px,1fr));gap:10px;margin:24px 0 30px;}
+  .item-tile{position:relative;min-height:88px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;border:1px solid #777773;background:transparent;padding:12px 6px;cursor:pointer;transition:background .15s ease,color .15s ease,border-color .15s ease;border-radius:4px;}
+  .item-tile:hover{background:#E7E7E2;}
+  .item-tile.checked{background:#D9D8D2;color:var(--ink);border-color:#6D6B66;}
+  .item-tile .kr{font-size:27px;font-weight:500;line-height:1;}
+  .item-tile .hint{font-size:9px;color:var(--ink-soft);margin-top:7px;}
+  .item-tile.checked .hint{color:var(--ink-soft);}
+  .item-tile.checked .note{color:var(--danger);}
+  .item-tile .note{font-size:8px;color:var(--danger);margin-top:4px;}
+  .item-tile .dot{position:absolute;top:8px;right:8px;width:6px;height:6px;border-radius:50%;background:#B7B7B0;}
+  .item-tile .dot.weak{background:var(--danger);}
+  .item-tile .dot.strong{background:var(--success);}
+  .item-tile .check{position:absolute;top:7px;left:9px;font-size:9px;font-weight:400;color:var(--ink);}
+  .count-select{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0 24px;}
+  .count-select button{min-width:50px;}
+  .count-select button.active{background:#D9D8D2;color:var(--ink);border-color:#6D6B66;}
+  .theme-list{display:flex;flex-direction:column;gap:10px;margin:20px 0 28px;}
+  .theme-row{display:flex;align-items:center;gap:14px;border:1px solid var(--line-light);padding:14px 12px;cursor:pointer;border-radius:4px;transition:background .15s ease,border-color .15s ease;}
+  .theme-row:first-child{}
+  .theme-row .box{width:14px;height:14px;border:1px solid var(--line);flex-shrink:0;}
+  .theme-row.checked .box{background:#6D6B66;box-shadow:inset 0 0 0 3px var(--bg);border-color:#6D6B66;}
+  .theme-row.checked{background:#D9D8D2;border-color:#6D6B66;}
+  .theme-row .label{font-size:14px;flex:1;}
+  .theme-row .n{font-size:12px;color:var(--muted);}
+  .empty-note{font-size:12px;color:var(--danger);border:1px solid rgba(155,73,69,.3);border-radius:4px;padding:10px 12px;margin:12px 0;}
+
+  /* quiz */
+  .quiz-exit-confirm{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;font-size:12px;color:var(--danger);border:1px solid rgba(155,73,69,.3);border-radius:4px;padding:10px 12px;}
+  .quiz-exit-actions{display:flex;gap:8px;}
+  .quiz-progress{font-size:11px;color:var(--muted);letter-spacing:.08em;margin:10px 0 12px;}
+  .quiz-card{background:transparent;padding:68px 28px 58px;text-align:center;border:1px solid var(--line-light);border-radius:6px;min-height:450px;}
+  .quiz-card.flash-correct{background:var(--success-soft);}
+  .quiz-card.flash-wrong{background:var(--danger-soft);}
+  @media (prefers-reduced-motion:no-preference){
+    .quiz-card.flash-correct{animation:pulseC .3s ease;}
+    .quiz-card.flash-wrong{animation:shakeW .3s ease;}
+  }
+  @keyframes pulseC{0%{transform:scale(1)}50%{transform:scale(1.012)}100%{transform:scale(1)}}
+  @keyframes shakeW{0%,100%{transform:translateX(0)}25%{transform:translateX(-5px)}50%{transform:translateX(5px)}75%{transform:translateX(-3px)}}
+  .quiz-kr{font-family:'Noto Sans KR',sans-serif;font-weight:500;font-size:88px;line-height:1;letter-spacing:-.05em;word-break:keep-all;}
+  .quiz-kr.long{font-size:48px;}
+  .quiz-meaning{font-size:13px;color:var(--ink-soft);margin-top:18px;min-height:20px;}
+  .answer-input{width:100%;max-width:350px;font-family:"Gen Interface JP",sans-serif;font-size:23px;padding:13px 10px;text-align:center;margin-top:32px;background:transparent;color:var(--ink);border:1px solid var(--line);border-radius:4px;}
+  .answer-input:focus{outline:0;border-color:var(--ink);}
+  .answer-input.ans-correct{border-color:var(--success);color:var(--success);}
+  .answer-input.ans-wrong{border-color:var(--danger);color:var(--danger);}
+  .feedback-line{margin-top:16px;font-size:13px;min-height:18px;}
+  .feedback-line.correct{color:var(--success);}
+  .feedback-line.wrong{color:var(--danger);}
+  .sound-btn{display:block;margin:13px auto 0;border:0;background:transparent;color:var(--ink-soft);font-family:inherit;font-size:11px;cursor:pointer;padding:4px;}
+  .quiz-actions{margin-top:30px;display:flex;justify-content:center;gap:10px;}
+
+  /* result */
+  .score-hero{text-align:left;padding:0 0 32px;border-bottom:1px solid var(--line);}
+  .score-hero .num{font-size:62px;line-height:1;letter-spacing:-.05em;}
+  .score-hero .lbl{font-size:11px;color:var(--muted);margin-top:8px;}
+  .review-list{display:flex;flex-direction:column;margin:24px 0 28px;border-top:1px solid var(--line-light);}
+  .review-row{display:flex;align-items:center;gap:12px;padding:13px 14px;border:1px solid var(--line-light);border-radius:4px;font-size:13px;background:transparent;}
+  .review-row.wrong{color:var(--danger);background:var(--danger-soft);border-color:rgba(155,73,69,.25);}
+  .review-row .rkr{font-family:'Noto Sans KR',sans-serif;font-size:18px;min-width:76px;}
+  .review-row .rmeta{flex:1;color:var(--ink-soft);line-height:1.6;}
+  .review-row .rmeta b{color:var(--ink);font-weight:400;}
+  .review-row .mark{font-size:14px;}
+  .review-sound-btn{border:0;background:transparent;cursor:pointer;font-size:14px;opacity:.55;}
+  .footer-actions{display:flex;gap:10px;margin-top:12px;}
+
+  @media(max-width:760px){
+    #app{padding:28px 14px 56px;}
+    .topbar{margin-left:18px;}
+    .brand .kr-title{font-size:31px;}
+    .home-stage{padding:96px 18px 54px;}
+    .home-stats{gap:16px;margin-bottom:70px;}
+    .home-stat{grid-template-columns:1fr auto auto;padding-left:0;padding-right:0;}
+    .home-stat-number{font-size:34px;}
+    .home-grid{gap:12px;}
+    .mode-card{min-height:136px;padding:24px 26px;border-radius:5px;}
+    .mode-kr{margin-bottom:14px;font-size:32px;}
+    .mode-row{gap:18px;}
+    .manage-shell,.word-shell,.result-shell{padding:44px 24px;}
+  }
+  @media(max-width:560px){
+    .home-stats{grid-template-columns:1fr;margin-bottom:56px;gap:16px;}
+    .home-stat{min-height:52px;}
+    .home-grid{grid-template-columns:1fr;}
+    .mode-card{min-height:122px;}
+    .home-stage{padding-top:88px;}
+    .quiz-card{padding:54px 20px 46px;}
+    .quiz-kr{font-size:64px;}
+    .quiz-kr.long{font-size:38px;}
+  }
+</style>
+</head>
+<body>
+<div id="app"></div>
+
+<script>
+/* ============================== DATA ============================== */
+const CHO_LIST = ['ㄱ','ㄲ','ㄴ','ㄷ','ㄸ','ㄹ','ㅁ','ㅂ','ㅃ','ㅅ','ㅆ','ㅇ','ㅈ','ㅉ','ㅊ','ㅋ','ㅌ','ㅍ','ㅎ'];
+const JUNG_LIST = ['ㅏ','ㅐ','ㅑ','ㅒ','ㅓ','ㅔ','ㅕ','ㅖ','ㅗ','ㅘ','ㅙ','ㅚ','ㅛ','ㅜ','ㅝ','ㅞ','ㅟ','ㅠ','ㅡ','ㅢ','ㅣ'];
+const JONG_LIST = ['','ㄱ','ㄲ','ㄳ','ㄴ','ㄵ','ㄶ','ㄷ','ㄹ','ㄺ','ㄻ','ㄼ','ㄽ','ㄾ','ㄿ','ㅀ','ㅁ','ㅂ','ㅄ','ㅅ','ㅆ','ㅇ','ㅈ','ㅊ','ㅋ','ㅌ','ㅍ','ㅎ'];
+function composeHangul(cho, jung, jong){
+  const choI = CHO_LIST.indexOf(cho);
+  const jungI = JUNG_LIST.indexOf(jung);
+  const jongI = JONG_LIST.indexOf(jong || '');
+  return String.fromCharCode(0xAC00 + (choI*21 + jungI)*28 + jongI);
+}
+function decomposeSyllable(ch){
+  const code = ch.codePointAt(0) - 0xAC00;
+  if(code < 0 || code > 11171) return null; // not a precomposed Hangul syllable (space, punctuation, etc.)
+  const jongI = code % 28;
+  const jungI = Math.floor(code/28) % 21;
+  const choI = Math.floor(code/28/21);
+  return {cho:CHO_LIST[choI], jung:JUNG_LIST[jungI], jong:JONG_LIST[jongI]};
+}
+function decomposeWord(word){
+  const out = [];
+  for(const ch of word){
+    const d = decomposeSyllable(ch);
+    if(d) out.push(d);
+  }
+  return out;
+}
+
+const VOWELS = [
+ {id:'v_a',kr:'ㅏ',roman:['a']},{id:'v_ae',kr:'ㅐ',roman:['ae']},
+ {id:'v_ya',kr:'ㅑ',roman:['ya']},{id:'v_yae',kr:'ㅒ',roman:['yae']},
+ {id:'v_eo',kr:'ㅓ',roman:['eo']},{id:'v_e',kr:'ㅔ',roman:['e']},
+ {id:'v_yeo',kr:'ㅕ',roman:['yeo']},{id:'v_ye',kr:'ㅖ',roman:['ye']},
+ {id:'v_o',kr:'ㅗ',roman:['o']},{id:'v_wa',kr:'ㅘ',roman:['wa']},
+ {id:'v_wae',kr:'ㅙ',roman:['wae']},{id:'v_oe',kr:'ㅚ',roman:['oe','we']},
+ {id:'v_yo',kr:'ㅛ',roman:['yo']},{id:'v_u',kr:'ㅜ',roman:['u']},
+ {id:'v_wo',kr:'ㅝ',roman:['wo']},{id:'v_we',kr:'ㅞ',roman:['we']},
+ {id:'v_wi',kr:'ㅟ',roman:['wi']},{id:'v_yu',kr:'ㅠ',roman:['yu']},
+ {id:'v_eu',kr:'ㅡ',roman:['eu']},{id:'v_ui',kr:'ㅢ',roman:['ui','yi']},
+ {id:'v_i',kr:'ㅣ',roman:['i']},
+];
+
+const CONSONANTS = [
+ {id:'c_g',kr:'ㄱ',roman:['g','k'],syn:['g','k']},
+ {id:'c_kk',kr:'ㄲ',roman:['kk','gg'],syn:['kk','gg']},
+ {id:'c_n',kr:'ㄴ',roman:['n'],syn:['n']},
+ {id:'c_d',kr:'ㄷ',roman:['d','t'],syn:['d','t']},
+ {id:'c_tt',kr:'ㄸ',roman:['tt','dd'],syn:['tt','dd']},
+ {id:'c_r',kr:'ㄹ',roman:['r','l'],syn:['r','l']},
+ {id:'c_m',kr:'ㅁ',roman:['m'],syn:['m']},
+ {id:'c_b',kr:'ㅂ',roman:['b','p'],syn:['b','p']},
+ {id:'c_pp',kr:'ㅃ',roman:['pp','bb'],syn:['pp','bb']},
+ {id:'c_s',kr:'ㅅ',roman:['s'],syn:['s']},
+ {id:'c_ss',kr:'ㅆ',roman:['ss'],syn:['ss']},
+ {id:'c_ng',kr:'ㅇ',roman:['ng'],syn:[''],note:'初声では無音'},
+ {id:'c_j',kr:'ㅈ',roman:['j'],syn:['j']},
+ {id:'c_jj',kr:'ㅉ',roman:['jj'],syn:['jj']},
+ {id:'c_ch',kr:'ㅊ',roman:['ch'],syn:['ch']},
+ {id:'c_k',kr:'ㅋ',roman:['k'],syn:['k']},
+ {id:'c_t',kr:'ㅌ',roman:['t'],syn:['t']},
+ {id:'c_p',kr:'ㅍ',roman:['p'],syn:['p']},
+ {id:'c_h',kr:'ㅎ',roman:['h'],syn:['h']},
+];
+
+// Single-jamo batchim (final consonants). Grouped by the 7 representative終声 sounds.
+const BATCHIM_JAMO = [
+ {id:'j_g',kr:'ㄱ',jong:'ㄱ',roman:'k',hint:'→ [k]'},
+ {id:'j_kk',kr:'ㄲ',jong:'ㄲ',roman:'k',hint:'→ [k]'},
+ {id:'j_k',kr:'ㅋ',jong:'ㅋ',roman:'k',hint:'→ [k]'},
+ {id:'j_n',kr:'ㄴ',jong:'ㄴ',roman:'n',hint:'→ [n]'},
+ {id:'j_d',kr:'ㄷ',jong:'ㄷ',roman:'t',hint:'→ [t]'},
+ {id:'j_s',kr:'ㅅ',jong:'ㅅ',roman:'t',hint:'→ [t]'},
+ {id:'j_ss',kr:'ㅆ',jong:'ㅆ',roman:'t',hint:'→ [t]'},
+ {id:'j_j',kr:'ㅈ',jong:'ㅈ',roman:'t',hint:'→ [t]'},
+ {id:'j_ch',kr:'ㅊ',jong:'ㅊ',roman:'t',hint:'→ [t]'},
+ {id:'j_t',kr:'ㅌ',jong:'ㅌ',roman:'t',hint:'→ [t]'},
+ {id:'j_h',kr:'ㅎ',jong:'ㅎ',roman:'t',hint:'→ [t]'},
+ {id:'j_r',kr:'ㄹ',jong:'ㄹ',roman:'l',hint:'→ [l]'},
+ {id:'j_m',kr:'ㅁ',jong:'ㅁ',roman:'m',hint:'→ [m]'},
+ {id:'j_b',kr:'ㅂ',jong:'ㅂ',roman:'p',hint:'→ [p]'},
+ {id:'j_p',kr:'ㅍ',jong:'ㅍ',roman:'p',hint:'→ [p]'},
+ {id:'j_ng',kr:'ㅇ',jong:'ㅇ',roman:'ng',hint:'→ [ng]'},
+];
+
+const WORD_THEMES = [
+ {id:'greet',label:'挨拶'},
+ {id:'number',label:'数字（일・이・삼）'},
+ {id:'nativenum',label:'数字（하나・둘・셋）'},
+ {id:'family',label:'家族'},
+ {id:'body',label:'体の部分'},
+ {id:'color',label:'色'},
+ {id:'animal',label:'動物'},
+ {id:'food',label:'食べ物'},
+ {id:'place',label:'場所'},
+ {id:'transport',label:'交通'},
+ {id:'weather',label:'天気・季節'},
+ {id:'time',label:'時間・曜日'},
+ {id:'verb',label:'基本動詞'},
+ {id:'adj',label:'基本形容詞'},
+ {id:'daily',label:'日常表現'},
+];
+const WORDS = [
+ // 挨拶
+ {id:'w_g1',kr:'안녕하세요',roman:['annyeonghaseyo'],meaning:'こんにちは',theme:'greet'},
+ {id:'w_g2',kr:'안녕히 가세요',roman:['annyeonghigaseyo'],meaning:'さようなら(見送る側)',theme:'greet'},
+ {id:'w_g3',kr:'감사합니다',roman:['gamsahamnida'],meaning:'ありがとうございます',theme:'greet'},
+ {id:'w_g4',kr:'죄송합니다',roman:['joesonghamnida'],meaning:'すみません',theme:'greet'},
+ {id:'w_g5',kr:'반갑습니다',roman:['bangapseumnida'],meaning:'お会いできて嬉しいです',theme:'greet'},
+ {id:'w_g6',kr:'안녕히 계세요',roman:['annyeonghigyeseyo'],meaning:'さようなら(見送られる側)',theme:'greet'},
+ {id:'w_g7',kr:'처음 뵙겠습니다',roman:['cheoeumboepgetseumnida'],meaning:'はじめまして',theme:'greet'},
+ {id:'w_g8',kr:'또 만나요',roman:['ttomannayo'],meaning:'また会いましょう',theme:'greet'},
+ {id:'w_g9',kr:'잘 지내요?',roman:['jaljinaeyo'],meaning:'元気ですか',theme:'greet'},
+ {id:'w_g10',kr:'오랜만이에요',roman:['oraenmanieyo'],meaning:'久しぶりです',theme:'greet'},
+ {id:'w_g11',kr:'축하합니다',roman:['chukhahamnida'],meaning:'おめでとうございます',theme:'greet'},
+ {id:'w_g12',kr:'괜찮아요',roman:['gwaenchanhayo'],meaning:'大丈夫です',theme:'greet'},
+ {id:'w_g13',kr:'미안해요',roman:['mianhaeyo'],meaning:'ごめんなさい',theme:'greet'},
+ {id:'w_g14',kr:'실례합니다',roman:['sillyehamnida'],meaning:'失礼します',theme:'greet'},
+ // 数字（漢数字：일・이・삼）
+ {id:'w_n1',kr:'일',roman:['il'],meaning:'1',theme:'number'},
+ {id:'w_n2',kr:'이',roman:['i'],meaning:'2',theme:'number'},
+ {id:'w_n3',kr:'삼',roman:['sam'],meaning:'3',theme:'number'},
+ {id:'w_n4',kr:'사',roman:['sa'],meaning:'4',theme:'number'},
+ {id:'w_n5',kr:'오',roman:['o'],meaning:'5',theme:'number'},
+ {id:'w_n6',kr:'육',roman:['yuk'],meaning:'6',theme:'number'},
+ {id:'w_n7',kr:'칠',roman:['chil'],meaning:'7',theme:'number'},
+ {id:'w_n8',kr:'팔',roman:['pal'],meaning:'8',theme:'number'},
+ {id:'w_n9',kr:'구',roman:['gu'],meaning:'9',theme:'number'},
+ {id:'w_n10',kr:'십',roman:['sip'],meaning:'10',theme:'number'},
+ {id:'w_n11',kr:'십일',roman:['sibil'],meaning:'11',theme:'number'},
+ {id:'w_n12',kr:'이십',roman:['isip'],meaning:'20',theme:'number'},
+ {id:'w_n13',kr:'삼십',roman:['samsip'],meaning:'30',theme:'number'},
+ {id:'w_n14',kr:'백',roman:['baek'],meaning:'100',theme:'number'},
+ {id:'w_n15',kr:'천',roman:['cheon'],meaning:'1000',theme:'number'},
+ {id:'w_n16',kr:'만',roman:['man'],meaning:'10000',theme:'number'},
+ {id:'w_n17',kr:'영',roman:['yeong'],meaning:'0',theme:'number'},
+ // 数字（固有数字：하나・둘・셋）
+ {id:'w_nn1',kr:'하나',roman:['hana'],meaning:'1つ',theme:'nativenum'},
+ {id:'w_nn2',kr:'둘',roman:['dul'],meaning:'2つ',theme:'nativenum'},
+ {id:'w_nn3',kr:'셋',roman:['set'],meaning:'3つ',theme:'nativenum'},
+ {id:'w_nn4',kr:'넷',roman:['net'],meaning:'4つ',theme:'nativenum'},
+ {id:'w_nn5',kr:'다섯',roman:['daseot'],meaning:'5つ',theme:'nativenum'},
+ {id:'w_nn6',kr:'여섯',roman:['yeoseot'],meaning:'6つ',theme:'nativenum'},
+ {id:'w_nn7',kr:'일곱',roman:['ilgop'],meaning:'7つ',theme:'nativenum'},
+ {id:'w_nn8',kr:'여덟',roman:['yeodeol'],meaning:'8つ',theme:'nativenum'},
+ {id:'w_nn9',kr:'아홉',roman:['ahop'],meaning:'9つ',theme:'nativenum'},
+ {id:'w_nn10',kr:'열',roman:['yeol'],meaning:'10',theme:'nativenum'},
+ {id:'w_nn11',kr:'스물',roman:['seumul'],meaning:'20(歳など)',theme:'nativenum'},
+ // 家族
+ {id:'w_f1',kr:'엄마',roman:['eomma'],meaning:'お母さん',theme:'family'},
+ {id:'w_f2',kr:'아빠',roman:['appa'],meaning:'お父さん',theme:'family'},
+ {id:'w_f3',kr:'언니',roman:['eonni'],meaning:'お姉さん(妹から)',theme:'family'},
+ {id:'w_f4',kr:'오빠',roman:['oppa'],meaning:'お兄さん(妹から)',theme:'family'},
+ {id:'w_f5',kr:'형',roman:['hyeong'],meaning:'お兄さん(弟から)',theme:'family'},
+ {id:'w_f6',kr:'누나',roman:['nuna'],meaning:'お姉さん(弟から)',theme:'family'},
+ {id:'w_f7',kr:'동생',roman:['dongsaeng'],meaning:'弟 / 妹',theme:'family'},
+ {id:'w_f8',kr:'할아버지',roman:['harabeoji'],meaning:'おじいさん',theme:'family'},
+ {id:'w_f9',kr:'할머니',roman:['halmeoni'],meaning:'おばあさん',theme:'family'},
+ {id:'w_f10',kr:'아들',roman:['adeul'],meaning:'息子',theme:'family'},
+ {id:'w_f11',kr:'딸',roman:['ttal'],meaning:'娘',theme:'family'},
+ {id:'w_f12',kr:'남편',roman:['nampyeon'],meaning:'夫',theme:'family'},
+ {id:'w_f13',kr:'아내',roman:['anae'],meaning:'妻',theme:'family'},
+ {id:'w_f14',kr:'아이',roman:['ai'],meaning:'子供',theme:'family'},
+ {id:'w_f15',kr:'가족',roman:['gajok'],meaning:'家族',theme:'family'},
+ // 体の部分
+ {id:'w_b1',kr:'머리',roman:['meori'],meaning:'頭',theme:'body'},
+ {id:'w_b2',kr:'눈',roman:['nun'],meaning:'目',theme:'body'},
+ {id:'w_b3',kr:'코',roman:['ko'],meaning:'鼻',theme:'body'},
+ {id:'w_b4',kr:'입',roman:['ip'],meaning:'口',theme:'body'},
+ {id:'w_b5',kr:'귀',roman:['gwi'],meaning:'耳',theme:'body'},
+ {id:'w_b6',kr:'손',roman:['son'],meaning:'手',theme:'body'},
+ {id:'w_b7',kr:'발',roman:['bal'],meaning:'足',theme:'body'},
+ {id:'w_b8',kr:'배',roman:['bae'],meaning:'お腹',theme:'body'},
+ {id:'w_b9',kr:'어깨',roman:['eokkae'],meaning:'肩',theme:'body'},
+ {id:'w_b10',kr:'다리',roman:['dari'],meaning:'脚',theme:'body'},
+ {id:'w_b11',kr:'얼굴',roman:['eolgul'],meaning:'顔',theme:'body'},
+ // 色
+ {id:'w_c1',kr:'빨간색',roman:['ppalgansaek'],meaning:'赤',theme:'color'},
+ {id:'w_c2',kr:'파란색',roman:['paransaek'],meaning:'青',theme:'color'},
+ {id:'w_c3',kr:'노란색',roman:['noransaek'],meaning:'黄色',theme:'color'},
+ {id:'w_c4',kr:'초록색',roman:['choroksaek'],meaning:'緑',theme:'color'},
+ {id:'w_c5',kr:'검은색',roman:['geomeunsaek'],meaning:'黒',theme:'color'},
+ {id:'w_c6',kr:'흰색',roman:['huinsaek'],meaning:'白',theme:'color'},
+ {id:'w_c7',kr:'보라색',roman:['borasaek'],meaning:'紫',theme:'color'},
+ {id:'w_c8',kr:'분홍색',roman:['bunhongsaek'],meaning:'ピンク',theme:'color'},
+ {id:'w_c9',kr:'주황색',roman:['juhwangsaek'],meaning:'オレンジ色',theme:'color'},
+ {id:'w_c10',kr:'갈색',roman:['galsaek'],meaning:'茶色',theme:'color'},
+ // 動物
+ {id:'w_an1',kr:'개',roman:['gae'],meaning:'犬',theme:'animal'},
+ {id:'w_an2',kr:'고양이',roman:['goyangi'],meaning:'猫',theme:'animal'},
+ {id:'w_an3',kr:'새',roman:['sae'],meaning:'鳥',theme:'animal'},
+ {id:'w_an4',kr:'물고기',roman:['mulgogi'],meaning:'魚',theme:'animal'},
+ {id:'w_an5',kr:'호랑이',roman:['horangi'],meaning:'虎',theme:'animal'},
+ {id:'w_an6',kr:'토끼',roman:['tokki'],meaning:'うさぎ',theme:'animal'},
+ {id:'w_an7',kr:'곰',roman:['gom'],meaning:'熊',theme:'animal'},
+ {id:'w_an8',kr:'사자',roman:['saja'],meaning:'ライオン',theme:'animal'},
+ {id:'w_an9',kr:'말',roman:['mal'],meaning:'馬',theme:'animal'},
+ {id:'w_an10',kr:'소',roman:['so'],meaning:'牛',theme:'animal'},
+ // 食べ物
+ {id:'w_d1',kr:'밥',roman:['bap'],meaning:'ご飯',theme:'food'},
+ {id:'w_d2',kr:'물',roman:['mul'],meaning:'水',theme:'food'},
+ {id:'w_d3',kr:'커피',roman:['keopi'],meaning:'コーヒー',theme:'food'},
+ {id:'w_d4',kr:'김치',roman:['gimchi'],meaning:'キムチ',theme:'food'},
+ {id:'w_d5',kr:'라면',roman:['ramyeon','ramyun'],meaning:'ラーメン',theme:'food'},
+ {id:'w_d6',kr:'맛있어요',roman:['masisseoyo'],meaning:'おいしいです',theme:'food'},
+ {id:'w_d7',kr:'빵',roman:['ppang'],meaning:'パン',theme:'food'},
+ {id:'w_d8',kr:'고기',roman:['gogi'],meaning:'肉',theme:'food'},
+ {id:'w_d9',kr:'생선',roman:['saengseon'],meaning:'魚(食材)',theme:'food'},
+ {id:'w_d10',kr:'야채',roman:['yachae'],meaning:'野菜',theme:'food'},
+ {id:'w_d11',kr:'과일',roman:['gwail'],meaning:'果物',theme:'food'},
+ {id:'w_d12',kr:'사과',roman:['sagwa'],meaning:'りんご',theme:'food'},
+ {id:'w_d13',kr:'바나나',roman:['banana'],meaning:'バナナ',theme:'food'},
+ {id:'w_d14',kr:'계란',roman:['gyeran'],meaning:'卵',theme:'food'},
+ {id:'w_d15',kr:'우유',roman:['uyu'],meaning:'牛乳',theme:'food'},
+ {id:'w_d16',kr:'차',roman:['cha'],meaning:'お茶',theme:'food'},
+ {id:'w_d17',kr:'술',roman:['sul'],meaning:'お酒',theme:'food'},
+ {id:'w_d18',kr:'배고파요',roman:['baegopayo'],meaning:'お腹が空きました',theme:'food'},
+ {id:'w_d19',kr:'배불러요',roman:['baebulleoyo'],meaning:'お腹がいっぱいです',theme:'food'},
+ // 場所
+ {id:'w_p1',kr:'학교',roman:['hakgyo'],meaning:'学校',theme:'place'},
+ {id:'w_p2',kr:'집',roman:['jip'],meaning:'家',theme:'place'},
+ {id:'w_p3',kr:'회사',roman:['hoesa'],meaning:'会社',theme:'place'},
+ {id:'w_p4',kr:'병원',roman:['byeongwon'],meaning:'病院',theme:'place'},
+ {id:'w_p5',kr:'은행',roman:['eunhaeng'],meaning:'銀行',theme:'place'},
+ {id:'w_p6',kr:'공항',roman:['gonghang'],meaning:'空港',theme:'place'},
+ {id:'w_p7',kr:'역',roman:['yeok'],meaning:'駅',theme:'place'},
+ {id:'w_p8',kr:'화장실',roman:['hwajangsil'],meaning:'トイレ',theme:'place'},
+ {id:'w_p9',kr:'식당',roman:['sikdang'],meaning:'食堂',theme:'place'},
+ {id:'w_p10',kr:'카페',roman:['kape'],meaning:'カフェ',theme:'place'},
+ {id:'w_p11',kr:'편의점',roman:['pyeonuijeom'],meaning:'コンビニ',theme:'place'},
+ {id:'w_p12',kr:'시장',roman:['sijang'],meaning:'市場',theme:'place'},
+ // 交通
+ {id:'w_t1',kr:'버스',roman:['beoseu'],meaning:'バス',theme:'transport'},
+ {id:'w_t2',kr:'지하철',roman:['jihacheol'],meaning:'地下鉄',theme:'transport'},
+ {id:'w_t3',kr:'택시',roman:['taeksi'],meaning:'タクシー',theme:'transport'},
+ {id:'w_t4',kr:'자동차',roman:['jadongcha'],meaning:'自動車',theme:'transport'},
+ {id:'w_t5',kr:'비행기',roman:['bihaenggi'],meaning:'飛行機',theme:'transport'},
+ {id:'w_t6',kr:'기차',roman:['gicha'],meaning:'汽車',theme:'transport'},
+ {id:'w_t7',kr:'자전거',roman:['jajeongeo'],meaning:'自転車',theme:'transport'},
+ {id:'w_t8',kr:'배',roman:['bae'],meaning:'船',theme:'transport'},
+ // 天気・季節
+ {id:'w_w1',kr:'봄',roman:['bom'],meaning:'春',theme:'weather'},
+ {id:'w_w2',kr:'여름',roman:['yeoreum'],meaning:'夏',theme:'weather'},
+ {id:'w_w3',kr:'가을',roman:['gaeul'],meaning:'秋',theme:'weather'},
+ {id:'w_w4',kr:'겨울',roman:['gyeoul'],meaning:'冬',theme:'weather'},
+ {id:'w_w5',kr:'비',roman:['bi'],meaning:'雨',theme:'weather'},
+ {id:'w_w6',kr:'눈',roman:['nun'],meaning:'雪',theme:'weather'},
+ {id:'w_w7',kr:'바람',roman:['baram'],meaning:'風',theme:'weather'},
+ {id:'w_w8',kr:'날씨',roman:['nalssi'],meaning:'天気',theme:'weather'},
+ {id:'w_w9',kr:'더워요',roman:['deowoyo'],meaning:'暑いです',theme:'weather'},
+ {id:'w_w10',kr:'추워요',roman:['chuwoyo'],meaning:'寒いです',theme:'weather'},
+ // 時間・曜日
+ {id:'w_ti1',kr:'오늘',roman:['oneul'],meaning:'今日',theme:'time'},
+ {id:'w_ti2',kr:'내일',roman:['naeil'],meaning:'明日',theme:'time'},
+ {id:'w_ti3',kr:'어제',roman:['eoje'],meaning:'昨日',theme:'time'},
+ {id:'w_ti4',kr:'지금',roman:['jigeum'],meaning:'今',theme:'time'},
+ {id:'w_ti5',kr:'아침',roman:['achim'],meaning:'朝',theme:'time'},
+ {id:'w_ti6',kr:'점심',roman:['jeomsim'],meaning:'昼',theme:'time'},
+ {id:'w_ti7',kr:'저녁',roman:['jeonyeok'],meaning:'夕方',theme:'time'},
+ {id:'w_ti8',kr:'밤',roman:['bam'],meaning:'夜',theme:'time'},
+ {id:'w_ti9',kr:'월요일',roman:['woryoil'],meaning:'月曜日',theme:'time'},
+ {id:'w_ti10',kr:'화요일',roman:['hwayoil'],meaning:'火曜日',theme:'time'},
+ {id:'w_ti11',kr:'수요일',roman:['suyoil'],meaning:'水曜日',theme:'time'},
+ {id:'w_ti12',kr:'목요일',roman:['mogyoil'],meaning:'木曜日',theme:'time'},
+ {id:'w_ti13',kr:'금요일',roman:['geumyoil'],meaning:'金曜日',theme:'time'},
+ {id:'w_ti14',kr:'토요일',roman:['toyoil'],meaning:'土曜日',theme:'time'},
+ {id:'w_ti15',kr:'일요일',roman:['iryoil'],meaning:'日曜日',theme:'time'},
+ // 基本動詞
+ {id:'w_v1',kr:'가다',roman:['gada'],meaning:'行く',theme:'verb'},
+ {id:'w_v2',kr:'오다',roman:['oda'],meaning:'来る',theme:'verb'},
+ {id:'w_v3',kr:'먹다',roman:['meokda'],meaning:'食べる',theme:'verb'},
+ {id:'w_v4',kr:'마시다',roman:['masida'],meaning:'飲む',theme:'verb'},
+ {id:'w_v5',kr:'보다',roman:['boda'],meaning:'見る',theme:'verb'},
+ {id:'w_v6',kr:'듣다',roman:['deutda'],meaning:'聞く',theme:'verb'},
+ {id:'w_v7',kr:'자다',roman:['jada'],meaning:'寝る',theme:'verb'},
+ {id:'w_v8',kr:'일어나다',roman:['ireonada'],meaning:'起きる',theme:'verb'},
+ {id:'w_v9',kr:'읽다',roman:['ikda'],meaning:'読む',theme:'verb'},
+ {id:'w_v10',kr:'쓰다',roman:['sseuda'],meaning:'書く',theme:'verb'},
+ {id:'w_v11',kr:'사다',roman:['sada'],meaning:'買う',theme:'verb'},
+ {id:'w_v12',kr:'주다',roman:['juda'],meaning:'あげる',theme:'verb'},
+ {id:'w_v13',kr:'만나다',roman:['mannada'],meaning:'会う',theme:'verb'},
+ {id:'w_v14',kr:'알다',roman:['alda'],meaning:'知る',theme:'verb'},
+ {id:'w_v15',kr:'모르다',roman:['moreuda'],meaning:'分からない',theme:'verb'},
+ // 基本形容詞
+ {id:'w_aj1',kr:'크다',roman:['keuda'],meaning:'大きい',theme:'adj'},
+ {id:'w_aj2',kr:'작다',roman:['jakda'],meaning:'小さい',theme:'adj'},
+ {id:'w_aj3',kr:'좋다',roman:['jota'],meaning:'良い',theme:'adj'},
+ {id:'w_aj4',kr:'나쁘다',roman:['nappeuda'],meaning:'悪い',theme:'adj'},
+ {id:'w_aj5',kr:'많다',roman:['manta'],meaning:'多い',theme:'adj'},
+ {id:'w_aj6',kr:'적다',roman:['jeokda'],meaning:'少ない',theme:'adj'},
+ {id:'w_aj7',kr:'예쁘다',roman:['yeppeuda'],meaning:'かわいい',theme:'adj'},
+ {id:'w_aj8',kr:'비싸다',roman:['bissada'],meaning:'(値段が)高い',theme:'adj'},
+ {id:'w_aj9',kr:'싸다',roman:['ssada'],meaning:'安い',theme:'adj'},
+ {id:'w_aj10',kr:'쉽다',roman:['swipda'],meaning:'易しい',theme:'adj'},
+ {id:'w_aj11',kr:'어렵다',roman:['eoryeopda'],meaning:'難しい',theme:'adj'},
+ // 日常表現
+ {id:'w_e1',kr:'네',roman:['ne'],meaning:'はい',theme:'daily'},
+ {id:'w_e2',kr:'아니요',roman:['aniyo'],meaning:'いいえ',theme:'daily'},
+ {id:'w_e3',kr:'알겠습니다',roman:['algetseumnida'],meaning:'わかりました',theme:'daily'},
+ {id:'w_e4',kr:'모르겠어요',roman:['moreugesseoyo'],meaning:'わかりません',theme:'daily'},
+ {id:'w_e5',kr:'사랑해요',roman:['saranghaeyo'],meaning:'好きです / 愛してます',theme:'daily'},
+ {id:'w_e6',kr:'여기요',roman:['yeogiyo'],meaning:'すみません(呼びかけ)',theme:'daily'},
+ {id:'w_e7',kr:'잠깐만요',roman:['jamkkanmanyo'],meaning:'ちょっと待ってください',theme:'daily'},
+ {id:'w_e8',kr:'화이팅',roman:['hwaiting'],meaning:'ファイト',theme:'daily'},
+ {id:'w_e9',kr:'진짜요?',roman:['jinjjayo'],meaning:'本当ですか',theme:'daily'},
+ {id:'w_e10',kr:'도와주세요',roman:['dowajuseyo'],meaning:'助けてください',theme:'daily'},
+ {id:'w_e11',kr:'조심하세요',roman:['josimhaseyo'],meaning:'気をつけてください',theme:'daily'},
+ {id:'w_e12',kr:'힘내세요',roman:['himnaeseyo'],meaning:'頑張ってください',theme:'daily'},
+ {id:'w_e13',kr:'가게',roman:['gage'],meaning:'店',theme:'daily'},
+ {id:'w_e14',kr:'거기',roman:['geogi'],meaning:'そこ',theme:'daily'},
+ {id:'w_e15',kr:'여기',roman:['yeogi'],meaning:'ここ',theme:'daily'},
+ {id:'w_e16',kr:'저기',roman:['jeogi'],meaning:'あそこ',theme:'daily'},
+ {id:'w_e17',kr:'가위',roman:['gawi'],meaning:'はさみ',theme:'daily'},
+ {id:'w_e18',kr:'가구',roman:['gagu'],meaning:'家具',theme:'daily'},
+ {id:'w_e19',kr:'거의',roman:['geoui','geoe'],meaning:'ほとんど',theme:'daily'},
+ {id:'w_e20',kr:'나이',roman:['nai'],meaning:'年齢',theme:'daily'},
+ {id:'w_e21',kr:'어디',roman:['eodi'],meaning:'どこ',theme:'daily'},
+ {id:'w_e22',kr:'사이',roman:['sai'],meaning:'間・仲',theme:'daily'},
+ {id:'w_e23',kr:'나무',roman:['namu'],meaning:'木',theme:'daily'},
+];
+
+// Words used only by the letter-based "単語" quiz format (vowel/consonant/batchim manage screens).
+// These are real words specifically useful for that filtering (e.g. "pure vowel" words below),
+// not part of the theme-based 単語クイズ, but still included in that filter's candidate pool.
+const EXTRA_WORDS = [
+ {id:'ev3',kr:'오이',roman:['oi'],meaning:'きゅうり'},
+ {id:'ev4',kr:'여우',roman:['yeou'],meaning:'キツネ'},
+ {id:'ev5',kr:'이유',roman:['iyu'],meaning:'理由'},
+ {id:'ev6',kr:'여유',roman:['yeoyu'],meaning:'余裕'},
+ {id:'ev7',kr:'아예',roman:['aye'],meaning:'いっそ／最初から'},
+ {id:'ev8',kr:'이외',roman:['ioe','iwe'],meaning:'以外'},
+ {id:'ev9',kr:'의의',roman:['uiui','iui'],meaning:'意義'},
+ {id:'ev10',kr:'우아',roman:['ua'],meaning:'優雅'},
+ {id:'ev11',kr:'아야',roman:['aya'],meaning:'痛っ(感嘆詞)'},
+ {id:'ev12',kr:'우와',roman:['uwa'],meaning:'わあ(感嘆詞)'},
+ {id:'ev13',kr:'아우',roman:['au'],meaning:'弟／妹(文語)'},
+ {id:'ev14',kr:'오예',roman:['oye'],meaning:'やった(スラング)'},
+ {id:'ev15',kr:'야유',roman:['yayu'],meaning:'野次'},
+ {id:'ev16',kr:'여아',roman:['yeoa'],meaning:'女児'},
+ {id:'ev17',kr:'이의',roman:['iui','ii'],meaning:'異議'},
+ {id:'ev18',kr:'우애',roman:['uae'],meaning:'友愛'},
+ {id:'ev19',kr:'가계',roman:['gagye'],meaning:'家計'},
+ {id:'ev20',kr:'가교',roman:['gagyo'],meaning:'架け橋'},
+ {id:'ev21',kr:'개개',roman:['gaegae'],meaning:'各々'},
+ {id:'ev22',kr:'고가',roman:['goga'],meaning:'高価'},
+ {id:'ev23',kr:'고개',roman:['gogae'],meaning:'峠'},
+ {id:'ev24',kr:'고교',roman:['gogyo'],meaning:'高校(고등학교の略)'},
+ {id:'ev25',kr:'과거',roman:['gwageo'],meaning:'過去'},
+ {id:'ev26',kr:'교가',roman:['gyoga'],meaning:'校歌'},
+ {id:'ev27',kr:'교과',roman:['gyogwa'],meaning:'教科'},
+ {id:'ev28',kr:'교구',roman:['gyogu'],meaning:'教具'},
+ {id:'ev29',kr:'구기',roman:['gugi'],meaning:'球技'},
+ {id:'ev30',kr:'기계',roman:['gigye'],meaning:'機械'},
+ {id:'ev31',kr:'기고',roman:['gigo'],meaning:'寄稿'},
+ {id:'ev32',kr:'기구',roman:['gigu'],meaning:'器具・機構'},
+ {id:'ev33',kr:'계기',roman:['gyegi'],meaning:'契機・きっかけ'},
+];
+
+// Additional real words for the letter-based consonant quiz.
+// Every Hangul syllable here has no batchim, so the quiz can stay focused on initial consonants + vowels.
+// The candidate filter below decides which of these become available from the consonants the learner checked.
+const CONSONANT_EXTRA_WORDS = [
+  {id:'cw001',kr:"구이",roman:["gui"],meaning:"焼き物・焼いた料理"},
+  {id:'cw002',kr:"고유",roman:["goyu"],meaning:"固有・独自"},
+  {id:'cw003',kr:"과외",roman:["gwaoe"],meaning:"個人レッスン"},
+  {id:'cw004',kr:"누이",roman:["nui"],meaning:"姉・妹（やや古い表現）"},
+  {id:'cw005',kr:"누에",roman:["nue"],meaning:"蚕"},
+  {id:'cw006',kr:"노예",roman:["noye"],meaning:"奴隷"},
+  {id:'cw007',kr:"두유",roman:["duyu"],meaning:"豆乳"},
+  {id:'cw008',kr:"대우",roman:["daeu"],meaning:"待遇・扱い"},
+  {id:'cw009',kr:"미아",roman:["mia"],meaning:"迷子"},
+  {id:'cw010',kr:"모유",roman:["moyu"],meaning:"母乳"},
+  {id:'cw011',kr:"무예",roman:["muye"],meaning:"武芸"},
+  {id:'cw012',kr:"배우",roman:["baeu"],meaning:"俳優"},
+  {id:'cw013',kr:"바위",roman:["bawi"],meaning:"岩"},
+  {id:'cw014',kr:"부위",roman:["buwi"],meaning:"部位"},
+  {id:'cw015',kr:"배아",roman:["baea"],meaning:"胚"},
+  {id:'cw016',kr:"뽀뽀",roman:["ppoppo"],meaning:"キス"},
+  {id:'cw017',kr:"삐삐",roman:["ppippi"],meaning:"ポケットベル"},
+  {id:'cw018',kr:"사위",roman:["sawi"],meaning:"婿"},
+  {id:'cw019',kr:"새우",roman:["saeu"],meaning:"エビ"},
+  {id:'cw020',kr:"시외",roman:["sioe"],meaning:"市外"},
+  {id:'cw021',kr:"소유",roman:["soyu"],meaning:"所有"},
+  {id:'cw022',kr:"시야",roman:["siya"],meaning:"視野"},
+  {id:'cw023',kr:"수유",roman:["suyu"],meaning:"授乳"},
+  {id:'cw024',kr:"사유",roman:["sayu"],meaning:"理由・事由"},
+  {id:'cw025',kr:"서예",roman:["seoye"],meaning:"書道"},
+  {id:'cw026',kr:"수요",roman:["suyo"],meaning:"需要"},
+  {id:'cw027',kr:"자주",roman:["jaju"],meaning:"よく・頻繁に"},
+  {id:'cw028',kr:"주위",roman:["juwi"],meaning:"周囲"},
+  {id:'cw029',kr:"자유",roman:["jayu"],meaning:"自由"},
+  {id:'cw030',kr:"주요",roman:["juyo"],meaning:"主要"},
+  {id:'cw031',kr:"지위",roman:["jiwi"],meaning:"地位"},
+  {id:'cw032',kr:"제외",roman:["jeoe"],meaning:"除外"},
+  {id:'cw033',kr:"조어",roman:["joeo"],meaning:"造語"},
+  {id:'cw034',kr:"자아",roman:["jaa"],meaning:"自我"},
+  {id:'cw035',kr:"제의",roman:["jeui"],meaning:"提案"},
+  {id:'cw036',kr:"주의",roman:["juui"],meaning:"注意"},
+  {id:'cw037',kr:"재외",roman:["jaeoe"],meaning:"在外・海外在住"},
+  {id:'cw038',kr:"치아",roman:["chia"],meaning:"歯"},
+  {id:'cw039',kr:"치유",roman:["chiyu"],meaning:"治癒・癒やし"},
+  {id:'cw040',kr:"차이",roman:["chai"],meaning:"違い"},
+  {id:'cw041',kr:"추위",roman:["chuwi"],meaning:"寒さ"},
+  {id:'cw042',kr:"최애",roman:["choeae"],meaning:"最推し"},
+  {id:'cw043',kr:"초유",roman:["choyu"],meaning:"初乳"},
+  {id:'cw044',kr:"치어",roman:["chieo"],meaning:"稚魚"},
+  {id:'cw045',kr:"카카오",roman:["kakao"],meaning:"カカオ"},
+  {id:'cw046',kr:"키위",roman:["kiwi"],meaning:"キウイ"},
+  {id:'cw047',kr:"코어",roman:["koeo"],meaning:"コア"},
+  {id:'cw048',kr:"케어",roman:["keeo"],meaning:"ケア"},
+  {id:'cw049',kr:"타이",roman:["tai"],meaning:"タイ・ネクタイ"},
+  {id:'cw050',kr:"타워",roman:["tawo"],meaning:"タワー"},
+  {id:'cw051',kr:"투어",roman:["tueo"],meaning:"ツアー"},
+  {id:'cw052',kr:"타이어",roman:["taieo"],meaning:"タイヤ"},
+  {id:'cw053',kr:"티어",roman:["tieo"],meaning:"ティア・階級"},
+  {id:'cw054',kr:"토이",roman:["toi"],meaning:"トイ・おもちゃ"},
+  {id:'cw055',kr:"파이",roman:["pai"],meaning:"パイ"},
+  {id:'cw056',kr:"페어",roman:["peeo"],meaning:"ペア・フェア"},
+  {id:'cw057',kr:"파워",roman:["pawo"],meaning:"パワー"},
+  {id:'cw058',kr:"하하",roman:["haha"],meaning:"はは（笑い声）"},
+  {id:'cw059',kr:"호호",roman:["hoho"],meaning:"ほほ（笑い声）"},
+  {id:'cw060',kr:"하이",roman:["hai"],meaning:"ハイ・こんにちは"},
+  {id:'cw061',kr:"하와이",roman:["hawai"],meaning:"ハワイ"},
+  {id:'cw062',kr:"허위",roman:["heowi"],meaning:"虚偽"},
+  {id:'cw063',kr:"해요",roman:["haeyo"],meaning:"します"},
+  {id:'cw064',kr:"회의",roman:["hoeui"],meaning:"会議"},
+  {id:'cw065',kr:"호의",roman:["houi"],meaning:"好意"},
+  {id:'cw066',kr:"후회",roman:["huhoe"],meaning:"後悔"},
+  {id:'cw067',kr:"화해",roman:["hwahae"],meaning:"仲直り・和解"},
+  {id:'cw068',kr:"고니",roman:["goni"],meaning:"白鳥"},
+  {id:'cw069',kr:"기내",roman:["ginae"],meaning:"機内"},
+  {id:'cw070',kr:"누가",roman:["nuga"],meaning:"誰が"},
+  {id:'cw071',kr:"고대",roman:["godae"],meaning:"古代"},
+  {id:'cw072',kr:"기대",roman:["gidae"],meaning:"期待"},
+  {id:'cw073',kr:"구두",roman:["gudu"],meaning:"靴"},
+  {id:'cw074',kr:"기도",roman:["gido"],meaning:"祈り・祈祷"},
+  {id:'cw075',kr:"대구",roman:["daegu"],meaning:"大邱・タラ"},
+  {id:'cw076',kr:"대개",roman:["daegae"],meaning:"たいてい"},
+  {id:'cw077',kr:"대가",roman:["daega"],meaning:"代価・大家"},
+  {id:'cw078',kr:"거리",roman:["geori"],meaning:"通り・距離"},
+  {id:'cw079',kr:"고래",roman:["gorae"],meaning:"クジラ"},
+  {id:'cw080',kr:"고려",roman:["goryeo"],meaning:"考慮"},
+  {id:'cw081',kr:"가로",roman:["garo"],meaning:"横"},
+  {id:'cw082',kr:"기러기",roman:["gireogi"],meaning:"雁"},
+  {id:'cw083',kr:"구리",roman:["guri"],meaning:"銅"},
+  {id:'cw084',kr:"가마",roman:["gama"],meaning:"窯・かま"},
+  {id:'cw085',kr:"거미",roman:["geomi"],meaning:"クモ"},
+  {id:'cw086',kr:"고무",roman:["gomu"],meaning:"ゴム"},
+  {id:'cw087',kr:"구매",roman:["gumae"],meaning:"購入"},
+  {id:'cw088',kr:"규모",roman:["gyumo"],meaning:"規模"},
+  {id:'cw089',kr:"고비",roman:["gobi"],meaning:"峠・難関"},
+  {id:'cw090',kr:"구비",roman:["gubi"],meaning:"具備・完備"},
+  {id:'cw091',kr:"기부",roman:["gibu"],meaning:"寄付"},
+  {id:'cw092',kr:"가수",roman:["gasu"],meaning:"歌手"},
+  {id:'cw093',kr:"가사",roman:["gasa"],meaning:"歌詞・家事"},
+  {id:'cw094',kr:"기사",roman:["gisa"],meaning:"記事・運転手"},
+  {id:'cw095',kr:"기세",roman:["gise"],meaning:"勢い"},
+  {id:'cw096',kr:"고사",roman:["gosa"],meaning:"考査・試験"},
+  {id:'cw097',kr:"구사",roman:["gusa"],meaning:"駆使"},
+  {id:'cw098',kr:"사기",roman:["sagi"],meaning:"詐欺・士気"},
+  {id:'cw099',kr:"시기",roman:["sigi"],meaning:"時期"},
+  {id:'cw100',kr:"세기",roman:["segi"],meaning:"世紀"},
+  {id:'cw101',kr:"소고기",roman:["sogogi"],meaning:"牛肉"},
+  {id:'cw102',kr:"시계",roman:["sigye"],meaning:"時計"},
+  {id:'cw103',kr:"소개",roman:["sogae"],meaning:"紹介"},
+  {id:'cw104',kr:"세계",roman:["segye"],meaning:"世界"},
+  {id:'cw105',kr:"가지",roman:["gaji"],meaning:"ナス・枝"},
+  {id:'cw106',kr:"가자",roman:["gaja"],meaning:"行こう"},
+  {id:'cw107',kr:"기지",roman:["giji"],meaning:"基地・機知"},
+  {id:'cw108',kr:"기자",roman:["gija"],meaning:"記者"},
+  {id:'cw109',kr:"구조",roman:["gujo"],meaning:"構造・救助"},
+  {id:'cw110',kr:"고지",roman:["goji"],meaning:"告知・高地"},
+  {id:'cw111',kr:"주거",roman:["jugeo"],meaning:"住居"},
+  {id:'cw112',kr:"지구",roman:["jigu"],meaning:"地球"},
+  {id:'cw113',kr:"제거",roman:["jegeo"],meaning:"除去"},
+  {id:'cw114',kr:"재고",roman:["jaego"],meaning:"在庫"},
+  {id:'cw115',kr:"조개",roman:["jogae"],meaning:"貝"},
+  {id:'cw116',kr:"주기",roman:["jugi"],meaning:"周期"},
+  {id:'cw117',kr:"고추",roman:["gochu"],meaning:"唐辛子"},
+  {id:'cw118',kr:"교차",roman:["gyocha"],meaning:"交差"},
+  {id:'cw119',kr:"구체",roman:["guche"],meaning:"具体・球体"},
+  {id:'cw120',kr:"차고",roman:["chago"],meaning:"車庫"},
+  {id:'cw121',kr:"치과",roman:["chigwa"],meaning:"歯科"},
+  {id:'cw122',kr:"크기",roman:["keugi"],meaning:"大きさ"},
+  {id:'cw123',kr:"카키",roman:["kaki"],meaning:"カーキ"},
+  {id:'cw124',kr:"기타",roman:["gita"],meaning:"ギター・その他"},
+  {id:'cw125',kr:"구토",roman:["guto"],meaning:"嘔吐"},
+  {id:'cw126',kr:"토기",roman:["togi"],meaning:"土器"},
+  {id:'cw127',kr:"타개",roman:["tagae"],meaning:"打開"},
+  {id:'cw128',kr:"기피",roman:["gipi"],meaning:"忌避"},
+  {id:'cw129',kr:"파기",roman:["pagi"],meaning:"破棄"},
+  {id:'cw130',kr:"폐기",roman:["pyegi"],meaning:"廃棄"},
+  {id:'cw131',kr:"피고",roman:["pigo"],meaning:"被告"},
+  {id:'cw132',kr:"피겨",roman:["pigyeo"],meaning:"フィギュアスケート"},
+  {id:'cw133',kr:"가해",roman:["gahae"],meaning:"加害"},
+  {id:'cw134',kr:"기회",roman:["gihoe"],meaning:"機会"},
+  {id:'cw135',kr:"기후",roman:["gihu"],meaning:"気候"},
+  {id:'cw136',kr:"교회",roman:["gyohoe"],meaning:"教会"},
+  {id:'cw137',kr:"회계",roman:["hoegye"],meaning:"会計"},
+  {id:'cw138',kr:"해고",roman:["haego"],meaning:"解雇"},
+  {id:'cw139',kr:"효과",roman:["hyogwa"],meaning:"効果"},
+  {id:'cw140',kr:"허가",roman:["heoga"],meaning:"許可"},
+  {id:'cw141',kr:"휴가",roman:["hyuga"],meaning:"休暇"},
+  {id:'cw142',kr:"나다",roman:["nada"],meaning:"出る・生じる"},
+  {id:'cw143',kr:"너도",roman:["neodo"],meaning:"君も"},
+  {id:'cw144',kr:"나도",roman:["nado"],meaning:"私も"},
+  {id:'cw145',kr:"다니다",roman:["danida"],meaning:"通う"},
+  {id:'cw146',kr:"나라",roman:["nara"],meaning:"国"},
+  {id:'cw147',kr:"노래",roman:["norae"],meaning:"歌"},
+  {id:'cw148',kr:"누리",roman:["nuri"],meaning:"世界・世の中"},
+  {id:'cw149',kr:"나루",roman:["naru"],meaning:"渡し場"},
+  {id:'cw150',kr:"네모",roman:["nemo"],meaning:"四角"},
+  {id:'cw151',kr:"너무",roman:["neomu"],meaning:"とても・あまりに"},
+  {id:'cw152',kr:"나비",roman:["nabi"],meaning:"蝶"},
+  {id:'cw153',kr:"내부",roman:["naebu"],meaning:"内部"},
+  {id:'cw154',kr:"네비",roman:["nebi"],meaning:"カーナビ（口語）"},
+  {id:'cw155',kr:"나사",roman:["nasa"],meaning:"ねじ"},
+  {id:'cw156',kr:"뉴스",roman:["nyuseu"],meaning:"ニュース"},
+  {id:'cw157',kr:"노사",roman:["nosa"],meaning:"労使"},
+  {id:'cw158',kr:"누수",roman:["nusu"],meaning:"漏水"},
+  {id:'cw159',kr:"나주",roman:["naju"],meaning:"羅州"},
+  {id:'cw160',kr:"노조",roman:["nojo"],meaning:"労働組合"},
+  {id:'cw161',kr:"내지",roman:["naeji"],meaning:"内地・ないし"},
+  {id:'cw162',kr:"나체",roman:["nache"],meaning:"裸体"},
+  {id:'cw163',kr:"나초",roman:["nacho"],meaning:"ナチョス"},
+  {id:'cw164',kr:"노트",roman:["noteu"],meaning:"ノート"},
+  {id:'cw165',kr:"나포",roman:["napo"],meaning:"拿捕"},
+  {id:'cw166',kr:"노하우",roman:["nohau"],meaning:"ノウハウ"},
+  {id:'cw167',kr:"도로",roman:["doro"],meaning:"道路"},
+  {id:'cw168',kr:"다르다",roman:["dareuda"],meaning:"違う"},
+  {id:'cw169',kr:"두루",roman:["duru"],meaning:"広く・あまねく"},
+  {id:'cw170',kr:"드라마",roman:["deurama"],meaning:"ドラマ"},
+  {id:'cw171',kr:"도마",roman:["doma"],meaning:"まな板"},
+  {id:'cw172',kr:"더미",roman:["deomi"],meaning:"山・塊"},
+  {id:'cw173',kr:"도미",roman:["domi"],meaning:"鯛"},
+  {id:'cw174',kr:"무대",roman:["mudae"],meaning:"舞台"},
+  {id:'cw175',kr:"마디",roman:["madi"],meaning:"節・区切り"},
+  {id:'cw176',kr:"미드",roman:["mideu"],meaning:"海外ドラマ（口語）"},
+  {id:'cw177',kr:"두부",roman:["dubu"],meaning:"豆腐"},
+  {id:'cw178',kr:"대비",roman:["daebi"],meaning:"対比・備え"},
+  {id:'cw179',kr:"도배",roman:["dobae"],meaning:"壁紙張り"},
+  {id:'cw180',kr:"바다",roman:["bada"],meaning:"海"},
+  {id:'cw181',kr:"보도",roman:["bodo"],meaning:"報道・歩道"},
+  {id:'cw182',kr:"부대",roman:["budae"],meaning:"部隊"},
+  {id:'cw183',kr:"비디오",roman:["bidio"],meaning:"ビデオ"},
+  {id:'cw184',kr:"도시",roman:["dosi"],meaning:"都市"},
+  {id:'cw185',kr:"대사",roman:["daesa"],meaning:"大使・せりふ"},
+  {id:'cw186',kr:"다소",roman:["daso"],meaning:"多少"},
+  {id:'cw187',kr:"소다",roman:["soda"],meaning:"ソーダ"},
+  {id:'cw188',kr:"세대",roman:["sedae"],meaning:"世代"},
+  {id:'cw189',kr:"시대",roman:["sidae"],meaning:"時代"},
+  {id:'cw190',kr:"수도",roman:["sudo"],meaning:"首都・水道"},
+  {id:'cw191',kr:"시도",roman:["sido"],meaning:"試み"},
+  {id:'cw192',kr:"돼지",roman:["dwaeji"],meaning:"豚"},
+  {id:'cw193',kr:"대지",roman:["daeji"],meaning:"大地"},
+  {id:'cw194',kr:"도자기",roman:["dojagi"],meaning:"陶磁器"},
+  {id:'cw195',kr:"제도",roman:["jedo"],meaning:"制度"},
+  {id:'cw196',kr:"지도",roman:["jido"],meaning:"地図・指導"},
+  {id:'cw197',kr:"대체",roman:["daeche"],meaning:"代替・一体"},
+  {id:'cw198',kr:"도처",roman:["docheo"],meaning:"至る所"},
+  {id:'cw199',kr:"차도",roman:["chado"],meaning:"車道"},
+  {id:'cw200',kr:"초대",roman:["chodae"],meaning:"招待"},
+  {id:'cw201',kr:"치대",roman:["chidae"],meaning:"歯科大学（略）"},
+  {id:'cw202',kr:"데코",roman:["deko"],meaning:"デコレーション"},
+  {id:'cw203',kr:"코드",roman:["kodeu"],meaning:"コード"},
+  {id:'cw204',kr:"카드",roman:["kadeu"],meaning:"カード"},
+  {id:'cw205',kr:"데이터",roman:["deiteo"],meaning:"データ"},
+  {id:'cw206',kr:"다투다",roman:["datuda"],meaning:"争う"},
+  {id:'cw207',kr:"타다",roman:["tada"],meaning:"乗る・燃える"},
+  {id:'cw208',kr:"토대",roman:["todae"],meaning:"土台"},
+  {id:'cw209',kr:"대표",roman:["daepyo"],meaning:"代表"},
+  {id:'cw210',kr:"대피",roman:["daepi"],meaning:"避難"},
+  {id:'cw211',kr:"포도",roman:["podo"],meaning:"ぶどう"},
+  {id:'cw212',kr:"파도",roman:["pado"],meaning:"波"},
+  {id:'cw213',kr:"대화",roman:["daehwa"],meaning:"会話"},
+  {id:'cw214',kr:"대해",roman:["daehae"],meaning:"〜について"},
+  {id:'cw215',kr:"도화",roman:["dohwa"],meaning:"図画・桃花"},
+  {id:'cw216',kr:"하다",roman:["hada"],meaning:"する"},
+  {id:'cw217',kr:"해도",roman:["haedo"],meaning:"しても"},
+  {id:'cw218',kr:"라마",roman:["rama"],meaning:"ラマ"},
+  {id:'cw219',kr:"로마",roman:["roma"],meaning:"ローマ"},
+  {id:'cw220',kr:"리마",roman:["rima"],meaning:"リマ"},
+  {id:'cw221',kr:"마루",roman:["maru"],meaning:"床・頂上"},
+  {id:'cw222',kr:"미로",roman:["miro"],meaning:"迷路"},
+  {id:'cw223',kr:"미래",roman:["mirae"],meaning:"未来"},
+  {id:'cw224',kr:"모래",roman:["morae"],meaning:"砂"},
+  {id:'cw225',kr:"리뷰",roman:["ribyu"],meaning:"レビュー"},
+  {id:'cw226',kr:"레버",roman:["rebeo"],meaning:"レバー"},
+  {id:'cw227',kr:"러시아",roman:["reosia"],meaning:"ロシア"},
+  {id:'cw228',kr:"레시피",roman:["resipi"],meaning:"レシピ"},
+  {id:'cw229',kr:"소리",roman:["sori"],meaning:"音・声"},
+  {id:'cw230',kr:"사례",roman:["sarye"],meaning:"事例"},
+  {id:'cw231',kr:"서로",roman:["seoro"],meaning:"互いに"},
+  {id:'cw232',kr:"라지",roman:["raji"],meaning:"ラージ"},
+  {id:'cw233',kr:"레저",roman:["rejeo"],meaning:"レジャー"},
+  {id:'cw234',kr:"로즈",roman:["rojeu"],meaning:"ローズ"},
+  {id:'cw235',kr:"자리",roman:["jari"],meaning:"席・場所"},
+  {id:'cw236',kr:"자료",roman:["jaryo"],meaning:"資料"},
+  {id:'cw237',kr:"조리",roman:["jori"],meaning:"調理"},
+  {id:'cw238',kr:"리치",roman:["richi"],meaning:"リッチ・ライチ"},
+  {id:'cw239',kr:"처리",roman:["cheori"],meaning:"処理"},
+  {id:'cw240',kr:"차례",roman:["charye"],meaning:"順番"},
+  {id:'cw241',kr:"로커",roman:["rokeo"],meaning:"ロッカー"},
+  {id:'cw242',kr:"라커",roman:["rakeo"],meaning:"ラッカー・ロッカー"},
+  {id:'cw243',kr:"커리",roman:["keori"],meaning:"カレー"},
+  {id:'cw244',kr:"캐리",roman:["kaeri"],meaning:"キャリー"},
+  {id:'cw245',kr:"라테",roman:["rate"],meaning:"ラテ"},
+  {id:'cw246',kr:"로터",roman:["roteo"],meaning:"ローター"},
+  {id:'cw247',kr:"타로",roman:["taro"],meaning:"タロット"},
+  {id:'cw248',kr:"트리",roman:["teuri"],meaning:"ツリー"},
+  {id:'cw249',kr:"리프",roman:["ripeu"],meaning:"リーフ"},
+  {id:'cw250',kr:"프로",roman:["peuro"],meaning:"プロ"},
+  {id:'cw251',kr:"파리",roman:["pari"],meaning:"パリ・ハエ"},
+  {id:'cw252',kr:"피로",roman:["piro"],meaning:"疲労"},
+  {id:'cw253',kr:"하루",roman:["haru"],meaning:"一日"},
+  {id:'cw254',kr:"허리",roman:["heori"],meaning:"腰"},
+  {id:'cw255',kr:"회로",roman:["hoero"],meaning:"回路"},
+  {id:'cw256',kr:"무비",roman:["mubi"],meaning:"ムービー"},
+  {id:'cw257',kr:"바보",roman:["babo"],meaning:"ばか"},
+  {id:'cw258',kr:"비비다",roman:["bibida"],meaning:"混ぜる・こする"},
+  {id:'cw259',kr:"미소",roman:["miso"],meaning:"微笑み"},
+  {id:'cw260',kr:"무사",roman:["musa"],meaning:"無事・武士"},
+  {id:'cw261',kr:"매사",roman:["maesa"],meaning:"何事も"},
+  {id:'cw262',kr:"세미",roman:["semi"],meaning:"セミ・準"},
+  {id:'cw263',kr:"소매",roman:["somae"],meaning:"袖・小売"},
+  {id:'cw264',kr:"모자",roman:["moja"],meaning:"帽子"},
+  {id:'cw265',kr:"마저",roman:["majeo"],meaning:"〜さえ・残りまで"},
+  {id:'cw266',kr:"미주",roman:["miju"],meaning:"米州"},
+  {id:'cw267',kr:"재미",roman:["jaemi"],meaning:"面白さ"},
+  {id:'cw268',kr:"자매",roman:["jamae"],meaning:"姉妹"},
+  {id:'cw269',kr:"마차",roman:["macha"],meaning:"馬車"},
+  {id:'cw270',kr:"미처",roman:["micheo"],meaning:"まだ・いまだ"},
+  {id:'cw271',kr:"마취",roman:["machwi"],meaning:"麻酔"},
+  {id:'cw272',kr:"치마",roman:["chima"],meaning:"スカート"},
+  {id:'cw273',kr:"마카오",roman:["makao"],meaning:"マカオ"},
+  {id:'cw274',kr:"카메라",roman:["kamera"],meaning:"カメラ"},
+  {id:'cw275',kr:"코미디",roman:["komidi"],meaning:"コメディ"},
+  {id:'cw276',kr:"모터",roman:["moteo"],meaning:"モーター"},
+  {id:'cw277',kr:"미터",roman:["miteo"],meaning:"メートル"},
+  {id:'cw278',kr:"테마",roman:["tema"],meaning:"テーマ"},
+  {id:'cw279',kr:"토마토",roman:["tomato"],meaning:"トマト"},
+  {id:'cw280',kr:"마피아",roman:["mapia"],meaning:"マフィア"},
+  {id:'cw281',kr:"매표",roman:["maepyo"],meaning:"切符販売"},
+  {id:'cw282',kr:"미화",roman:["mihwa"],meaning:"美化"},
+  {id:'cw283',kr:"모호",roman:["moho"],meaning:"曖昧"},
+  {id:'cw284',kr:"하마",roman:["hama"],meaning:"カバ"},
+  {id:'cw285',kr:"해마",roman:["haema"],meaning:"タツノオトシゴ・海馬"},
+  {id:'cw286',kr:"비서",roman:["biseo"],meaning:"秘書"},
+  {id:'cw287',kr:"보수",roman:["bosu"],meaning:"保守・補修"},
+  {id:'cw288',kr:"부서",roman:["buseo"],meaning:"部署"},
+  {id:'cw289',kr:"세부",roman:["sebu"],meaning:"細部"},
+  {id:'cw290',kr:"사비",roman:["sabi"],meaning:"私費"},
+  {id:'cw291',kr:"소비",roman:["sobi"],meaning:"消費"},
+  {id:'cw292',kr:"수비",roman:["subi"],meaning:"守備"},
+  {id:'cw293',kr:"바지",roman:["baji"],meaning:"ズボン"},
+  {id:'cw294',kr:"비자",roman:["bija"],meaning:"ビザ"},
+  {id:'cw295',kr:"부자",roman:["buja"],meaning:"お金持ち"},
+  {id:'cw296',kr:"보조",roman:["bojo"],meaning:"補助"},
+  {id:'cw297',kr:"자비",roman:["jabi"],meaning:"慈悲"},
+  {id:'cw298',kr:"주부",roman:["jubu"],meaning:"主婦"},
+  {id:'cw299',kr:"제비",roman:["jebi"],meaning:"ツバメ"},
+  {id:'cw300',kr:"배추",roman:["baechu"],meaning:"白菜"},
+  {id:'cw301',kr:"부처",roman:["bucheo"],meaning:"仏・仏陀"},
+  {id:'cw302',kr:"차비",roman:["chabi"],meaning:"交通費"},
+  {id:'cw303',kr:"초보",roman:["chobo"],meaning:"初心者"},
+  {id:'cw304',kr:"커버",roman:["keobeo"],meaning:"カバー"},
+  {id:'cw305',kr:"큐브",roman:["kyubeu"],meaning:"キューブ"},
+  {id:'cw306',kr:"버터",roman:["beoteo"],meaning:"バター"},
+  {id:'cw307',kr:"보트",roman:["boteu"],meaning:"ボート"},
+  {id:'cw308',kr:"뷔페",roman:["bwipe"],meaning:"ビュッフェ"},
+  {id:'cw309',kr:"피부",roman:["pibu"],meaning:"皮膚"},
+  {id:'cw310',kr:"포부",roman:["pobu"],meaning:"抱負"},
+  {id:'cw311',kr:"보호",roman:["boho"],meaning:"保護"},
+  {id:'cw312',kr:"비하",roman:["biha"],meaning:"卑下・見下し"},
+  {id:'cw313',kr:"부호",roman:["buho"],meaning:"符号・富豪"},
+  {id:'cw314',kr:"화보",roman:["hwabo"],meaning:"グラビア・画報"},
+  {id:'cw315',kr:"후보",roman:["hubo"],meaning:"候補"},
+  {id:'cw316',kr:"소재",roman:["sojae"],meaning:"素材"},
+  {id:'cw317',kr:"수지",roman:["suji"],meaning:"樹脂・収支"},
+  {id:'cw318',kr:"세제",roman:["seje"],meaning:"洗剤"},
+  {id:'cw319',kr:"주사",roman:["jusa"],meaning:"注射"},
+  {id:'cw320',kr:"주소",roman:["juso"],meaning:"住所"},
+  {id:'cw321',kr:"자세",roman:["jase"],meaning:"姿勢"},
+  {id:'cw322',kr:"제사",roman:["jesa"],meaning:"祭祀"},
+  {id:'cw323',kr:"지사",roman:["jisa"],meaning:"支社・知事"},
+  {id:'cw324',kr:"사체",roman:["sache"],meaning:"死体"},
+  {id:'cw325',kr:"수치",roman:["suchi"],meaning:"数値・羞恥"},
+  {id:'cw326',kr:"시차",roman:["sicha"],meaning:"時差"},
+  {id:'cw327',kr:"차시",roman:["chasi"],meaning:"授業の回"},
+  {id:'cw328',kr:"처사",roman:["cheosa"],meaning:"処し方"},
+  {id:'cw329',kr:"치사",roman:["chisa"],meaning:"致死・卑怯"},
+  {id:'cw330',kr:"스키",roman:["seuki"],meaning:"スキー"},
+  {id:'cw331',kr:"스코어",roman:["seukoeo"],meaning:"スコア"},
+  {id:'cw332',kr:"코스",roman:["koseu"],meaning:"コース"},
+  {id:'cw333',kr:"키스",roman:["kiseu"],meaning:"キス"},
+  {id:'cw334',kr:"스타",roman:["seuta"],meaning:"スター"},
+  {id:'cw335',kr:"세트",roman:["seteu"],meaning:"セット"},
+  {id:'cw336',kr:"스토리",roman:["seutori"],meaning:"ストーリー"},
+  {id:'cw337',kr:"테스트",roman:["teseuteu"],meaning:"テスト"},
+  {id:'cw338',kr:"토스트",roman:["toseuteu"],meaning:"トースト"},
+  {id:'cw339',kr:"스파",roman:["seupa"],meaning:"スパ"},
+  {id:'cw340',kr:"소파",roman:["sopa"],meaning:"ソファ"},
+  {id:'cw341',kr:"파스타",roman:["paseuta"],meaning:"パスタ"},
+  {id:'cw342',kr:"포스",roman:["poseu"],meaning:"フォース・迫力"},
+  {id:'cw343',kr:"사회",roman:["sahoe"],meaning:"社会"},
+  {id:'cw344',kr:"시화",roman:["sihwa"],meaning:"詩画"},
+  {id:'cw345',kr:"수화",roman:["suhwa"],meaning:"手話"},
+  {id:'cw346',kr:"해소",roman:["haeso"],meaning:"解消"},
+  {id:'cw347',kr:"호수",roman:["hosu"],meaning:"湖"},
+  {id:'cw348',kr:"허세",roman:["heose"],meaning:"虚勢"},
+  {id:'cw349',kr:"자차",roman:["jacha"],meaning:"自家用車"},
+  {id:'cw350',kr:"주차",roman:["jucha"],meaning:"駐車"},
+  {id:'cw351',kr:"조차",roman:["jocha"],meaning:"〜さえ"},
+  {id:'cw352',kr:"처지",roman:["cheoji"],meaning:"境遇"},
+  {id:'cw353',kr:"치즈",roman:["chijeu"],meaning:"チーズ"},
+  {id:'cw354',kr:"조커",roman:["jokeo"],meaning:"ジョーカー"},
+  {id:'cw355',kr:"타자",roman:["taja"],meaning:"打者・タイピング"},
+  {id:'cw356',kr:"투자",roman:["tuja"],meaning:"投資"},
+  {id:'cw357',kr:"토지",roman:["toji"],meaning:"土地"},
+  {id:'cw358',kr:"지폐",roman:["jipye"],meaning:"紙幣"},
+  {id:'cw359',kr:"포즈",roman:["pojeu"],meaning:"ポーズ"},
+  {id:'cw360',kr:"피자",roman:["pija"],meaning:"ピザ"},
+  {id:'cw361',kr:"지하",roman:["jiha"],meaning:"地下"},
+  {id:'cw362',kr:"재화",roman:["jaehwa"],meaning:"財貨"},
+  {id:'cw363',kr:"조화",roman:["johwa"],meaning:"調和・造花"},
+  {id:'cw364',kr:"화제",roman:["hwaje"],meaning:"話題"},
+  {id:'cw365',kr:"해제",roman:["haeje"],meaning:"解除"},
+  {id:'cw366',kr:"호주",roman:["hoju"],meaning:"オーストラリア"},
+  {id:'cw367',kr:"체크",roman:["chekeu"],meaning:"チェック"},
+  {id:'cw368',kr:"차트",roman:["chateu"],meaning:"チャート"},
+  {id:'cw369',kr:"치트",roman:["chiteu"],meaning:"チート"},
+  {id:'cw370',kr:"토치",roman:["tochi"],meaning:"トーチ"},
+  {id:'cw371',kr:"체포",roman:["chepo"],meaning:"逮捕"},
+  {id:'cw372',kr:"차표",roman:["chapyo"],meaning:"乗車券"},
+  {id:'cw373',kr:"피치",roman:["pichi"],meaning:"ピッチ・桃"},
+  {id:'cw374',kr:"차후",roman:["chahu"],meaning:"今後"},
+  {id:'cw375',kr:"최후",roman:["choehu"],meaning:"最後"},
+  {id:'cw376',kr:"하차",roman:["hacha"],meaning:"下車"},
+  {id:'cw377',kr:"회차",roman:["hoecha"],meaning:"回・話数"},
+  {id:'cw378',kr:"커트",roman:["keoteu"],meaning:"カット"},
+  {id:'cw379',kr:"코트",roman:["koteu"],meaning:"コート"},
+  {id:'cw380',kr:"타코",roman:["tako"],meaning:"タコス"},
+  {id:'cw381',kr:"파크",roman:["pakeu"],meaning:"パーク"},
+  {id:'cw382',kr:"피크",roman:["pikeu"],meaning:"ピーク"},
+  {id:'cw383',kr:"테이프",roman:["teipeu"],meaning:"テープ"},
+  {id:'cw384',kr:"타이포",roman:["taipo"],meaning:"タイポ・誤植"},
+  {id:'cw385',kr:"포토",roman:["poto"],meaning:"フォト"},
+  {id:'cw386',kr:"태후",roman:["taehu"],meaning:"皇后"},
+  {id:'cw387',kr:"하트",roman:["hateu"],meaning:"ハート"},
+  {id:'cw388',kr:"포화",roman:["pohwa"],meaning:"飽和"},
+  {id:'cw389',kr:"회피",roman:["hoepi"],meaning:"回避"},
+  {id:'cw390',kr:"꼬마",roman:["kkoma"],meaning:"ちびっ子"},
+  {id:'cw391',kr:"꼬리",roman:["kkori"],meaning:"しっぽ"},
+  {id:'cw392',kr:"끼리",roman:["kkiri"],meaning:"同士で"},
+  {id:'cw393',kr:"꺼내다",roman:["kkeonaeda"],meaning:"取り出す"},
+  {id:'cw394',kr:"꾸미다",roman:["kkumida"],meaning:"飾る"},
+  {id:'cw395',kr:"꼬이다",roman:["kkoida"],meaning:"もつれる"},
+  {id:'cw396',kr:"깨우다",roman:["kkaeuda"],meaning:"起こす"},
+  {id:'cw397',kr:"끼우다",roman:["kkiuda"],meaning:"はめる"},
+  {id:'cw398',kr:"까다",roman:["kkada"],meaning:"むく・厳しい"},
+  {id:'cw399',kr:"끄다",roman:["kkeuda"],meaning:"消す"},
+  {id:'cw400',kr:"꾸다",roman:["kkuda"],meaning:"夢を見る・借りる"},
+  {id:'cw401',kr:"끼다",roman:["kkida"],meaning:"はめる・挟む"},
+  {id:'cw402',kr:"따라",roman:["ttara"],meaning:"〜に沿って"},
+  {id:'cw403',kr:"따로",roman:["ttaro"],meaning:"別に"},
+  {id:'cw404',kr:"띠다",roman:["ttida"],meaning:"帯びる"},
+  {id:'cw405',kr:"떼다",roman:["tteda"],meaning:"外す"},
+  {id:'cw406',kr:"뜨다",roman:["tteuda"],meaning:"浮く・開ける"},
+  {id:'cw407',kr:"뛰다",roman:["ttwida"],meaning:"走る・跳ぶ"},
+  {id:'cw408',kr:"따다",roman:["ttada"],meaning:"取る・摘む"},
+  {id:'cw409',kr:"떠나다",roman:["tteonada"],meaning:"離れる・出発する"},
+  {id:'cw410',kr:"따오다",roman:["ttaoda"],meaning:"取ってくる"},
+  {id:'cw411',kr:"띄우다",roman:["ttuiuda"],meaning:"浮かべる・間を空ける"},
+  {id:'cw412',kr:"따위",roman:["ttawi"],meaning:"〜など"},
+  {id:'cw413',kr:"뿌리",roman:["ppuri"],meaning:"根"},
+  {id:'cw414',kr:"빠르다",roman:["ppareuda"],meaning:"速い"},
+  {id:'cw415',kr:"빼다",roman:["ppaeda"],meaning:"抜く"},
+  {id:'cw416',kr:"뿌리다",roman:["ppurida"],meaning:"まく"},
+  {id:'cw417',kr:"빠지다",roman:["ppajida"],meaning:"落ちる・抜ける"},
+  {id:'cw418',kr:"쏘다",roman:["ssoda"],meaning:"撃つ"},
+  {id:'cw419',kr:"씌우다",roman:["ssuiuda"],meaning:"かぶせる"},
+  {id:'cw420',kr:"쓰이다",roman:["sseuida"],meaning:"使われる・書かれる"},
+  {id:'cw421',kr:"싸우다",roman:["ssauda"],meaning:"けんかする"},
+  {id:'cw422',kr:"쏘이다",roman:["ssoida"],meaning:"刺される・撃たれる"},
+  {id:'cw423',kr:"짜다",roman:["jjada"],meaning:"しょっぱい・組む"},
+  {id:'cw424',kr:"찌다",roman:["jjida"],meaning:"蒸す・太る"},
+  {id:'cw425',kr:"쪼개다",roman:["jjogaeda"],meaning:"割る"},
+  {id:'cw426',kr:"찌개",roman:["jjigae"],meaning:"チゲ"},
+  {id:'cw427',kr:"짜리",roman:["jjari"],meaning:"〜相当の"},
+  {id:'cw428',kr:"쪼이다",roman:["jjoida"],meaning:"締める・照りつける"},
+  {id:'cw429',kr:"찌르다",roman:["jjireuda"],meaning:"刺す"},
+];
+
+const CATEGORY_META = {
+  vowel:     {label:'母音',     items:VOWELS},
+  consonant: {label:'子音',     items:CONSONANTS},
+  batchim:   {label:'パッチム', items:BATCHIM_JAMO},
+};
+
+/* ============================== STORAGE ============================== */
+// This standalone version stores one learning record in this browser only.
+// No user/profile switching and no external/host storage are used.
+const STORAGE_KEY = 'hangul_quiz_progress';
+const LEGACY_STORAGE_KEYS = ['progress_p1', 'progress_p2'];
+
+function emptyProgress(){ return {learned:{}, stats:{}, totalTimeMs:0}; }
+function normalizeProgress(p){
+  if(!p || typeof p !== 'object') return emptyProgress();
+  if(!p.learned || typeof p.learned !== 'object') p.learned = {};
+  if(!p.stats || typeof p.stats !== 'object') p.stats = {};
+  if(typeof p.totalTimeMs !== 'number') p.totalTimeMs = 0;
+  return p;
+}
+function readLocalProgress(key){
+  try{
+    const raw = window.localStorage.getItem(key);
+    return raw ? normalizeProgress(JSON.parse(raw)) : null;
+  }catch(e){
+    return null;
+  }
+}
+function writeLocalProgress(key, json){
+  try{
+    window.localStorage.setItem(key, json);
+    return true;
+  }catch(e){
+    return false;
+  }
+}
+async function loadProgress(){
+  // Current single-user record.
+  const current = readLocalProgress(STORAGE_KEY);
+  if(current) return current;
+
+  // One-time migration from the former Ken/Kotoe version.
+  // Ken (p1) is preferred because it was the default profile; p2 is used only if p1 is absent.
+  for(const legacyKey of LEGACY_STORAGE_KEYS){
+    const legacy = readLocalProgress(legacyKey);
+    if(legacy){
+      writeLocalProgress(STORAGE_KEY, JSON.stringify(legacy));
+      return legacy;
+    }
+  }
+  return emptyProgress();
+}
+async function saveProgress(progress){
+  const json = JSON.stringify(normalizeProgress(progress));
+  const saved = writeLocalProgress(STORAGE_KEY, json);
+
+  if(saved){
+    if(state.saveError){ state.saveError = false; state.saveErrorDismissed = false; render(); }
+    return true;
+  }
+
+  const wasAlreadyShown = state.saveError;
+  state.saveError = true;
+  if(!wasAlreadyShown) render();
+  return false;
+}
+// Debounced save for high-frequency interactions such as tapping many checkboxes.
+let saveTimer = null;
+function scheduleSave(){
+  if(saveTimer) clearTimeout(saveTimer);
+  saveTimer = setTimeout(()=>{ saveTimer = null; saveProgress(state.progress); }, 600);
+}
+function flushSave(){
+  if(saveTimer){ clearTimeout(saveTimer); saveTimer = null; saveProgress(state.progress); }
+}
+
+/* ============================== STATE ============================== */
+let state = {
+  progress: null,
+  screen: 'loading',
+  category: null,
+  wordSelectedThemes: null,
+  quiz: null,
+  countChoice: {},
+  formatChoice: {},
+  lastQuizType: null,
+  lastQuizCategory: null,
+  confirmingReset: false,
+  saveError: false,
+  saveErrorDismissed: false,
+  showBackup: false,
+  confirmingRestore: false,
+};
+
+async function init(){
+  state.progress = await loadProgress();
+  state.screen = 'home';
+  render();
+}
+
+async function resetProgress(){
+  if(saveTimer){ clearTimeout(saveTimer); saveTimer = null; }
+  state.progress = emptyProgress();
+  await saveProgress(state.progress);
+  state.confirmingReset = false;
+  render();
+}
+
+function toggleBackupPanel(){
+  state.showBackup = !state.showBackup;
+  state.confirmingRestore = false;
+  render();
+}
+async function copyBackupText(){
+  const ta = document.getElementById('backupExport');
+  const fb = document.getElementById('copyFeedback');
+  if(!ta) return;
+  try{
+    await navigator.clipboard.writeText(ta.value);
+    if(fb) fb.textContent = 'コピーしました';
+  }catch(e){
+    ta.focus(); ta.select();
+    if(fb) fb.textContent = '選択したので Cmd/Ctrl+C でコピーしてください';
+  }
+}
+async function quickCopyBackup(){
+  const btn = document.getElementById('btnQuickBackup');
+  const text = JSON.stringify(state.progress, null, 2);
+  try{
+    await navigator.clipboard.writeText(text);
+    if(btn){ btn.textContent = 'コピーしました ✓'; }
+  }catch(e){
+    // clipboard API unavailable here — fall back to the full backup panel where
+    // the text is shown in a selectable textarea.
+    state.showBackup = true;
+    state.screen = 'home';
+    render();
+  }
+}
+let pendingRestore = null;
+function requestRestore(){
+  const ta = document.getElementById('restoreInput');
+  const errEl = document.getElementById('restoreError');
+  if(errEl) errEl.textContent = '';
+  const raw = ta ? ta.value.trim() : '';
+  if(!raw){ if(errEl) errEl.textContent = 'テキストを貼り付けてください。'; return; }
+  try{
+    const parsed = JSON.parse(raw);
+    if(!parsed || typeof parsed !== 'object' || !parsed.learned || !parsed.stats){
+      if(errEl) errEl.textContent = '正しいバックアップ形式ではないようです。';
+      return;
+    }
+    pendingRestore = parsed;
+    state.confirmingRestore = true;
+    render();
+  }catch(e){
+    if(errEl) errEl.textContent = '読み込めませんでした。コピーした内容をそのまま貼り付けてください。';
+  }
+}
+async function confirmRestore(){
+  if(!pendingRestore) return;
+  if(typeof pendingRestore.totalTimeMs !== 'number') pendingRestore.totalTimeMs = 0;
+  state.progress = pendingRestore;
+  pendingRestore = null;
+  state.confirmingRestore = false;
+  await saveProgress(state.progress);
+  render();
+}
+function cancelRestore(){
+  state.confirmingRestore = false;
+  pendingRestore = null;
+  render();
+}
+
+/* ============================== HELPERS ============================== */
+function norm(s){ return (s||'').toString().trim().toLowerCase().replace(/[\s\-']/g,''); }
+function isCorrectAnswer(acceptList, input){
+  const u = norm(input);
+  if(!u) return false;
+  return acceptList.some(r => norm(r) === u);
+}
+function shuffle(arr){
+  const a = arr.slice();
+  for(let i=a.length-1;i>0;i--){ const j = Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; }
+  return a;
+}
+function weightFor(stats, id){
+  const s = stats[id];
+  if(!s) return 1.4;
+  const w = 1 + (s.wrong||0)*2 - (s.correct||0)*0.25;
+  return Math.max(w, 0.3);
+}
+function weightedPick(items, stats, n){
+  const keyed = items.map(it => ({it, key: Math.pow(Math.random(), 1/weightFor(stats, it.id))}));
+  keyed.sort((a,b)=>b.key-a.key);
+  return shuffle(keyed.slice(0, Math.min(n, keyed.length)).map(k=>k.it));
+}
+function learnedCount(catKey){
+  const meta = CATEGORY_META[catKey];
+  return meta.items.filter(it => state.progress.learned[it.id]).length;
+}
+function aggregateStats(progress){
+  let correct = 0, wrong = 0;
+  Object.values(progress.stats).forEach(s=>{ correct += s.correct||0; wrong += s.wrong||0; });
+  const total = correct + wrong;
+  return {total, correct, wrong, rate: total>0 ? Math.round((correct/total)*100) : null};
+}
+function formatDuration(ms){
+  ms = ms || 0;
+  const totalSec = Math.floor(ms/1000);
+  const h = Math.floor(totalSec/3600);
+  const m = Math.floor((totalSec%3600)/60);
+  const s = totalSec%60;
+  if(h>0) return `${h}時間${m}分`;
+  if(m>0) return `${m}分`;
+  return `${s}秒`;
+}
+function finishQuizSession(quiz){
+  quiz.answers.forEach(a=>{
+    (a.statIds || []).forEach(id=>{
+      const st = state.progress.stats;
+      if(!st[id]) st[id] = {correct:0, wrong:0};
+      if(a.correct) st[id].correct++; else st[id].wrong++;
+    });
+  });
+  const elapsed = Date.now() - (quiz.startTime || Date.now());
+  state.progress.totalTimeMs = (state.progress.totalTimeMs || 0) + elapsed;
+  saveProgress(state.progress);
+}
+function speakKorean(text){
+  try{
+    if(!('speechSynthesis' in window) || !text) return;
+    window.speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = 'ko-KR';
+    u.rate = 0.85;
+    window.speechSynthesis.speak(u);
+  }catch(e){ /* no Korean voice available or speech unsupported — fail silently */ }
+}
+
+/* ============================== RENDER: SHELL ============================== */
+function render(){
+  const app = document.getElementById('app');
+  app.innerHTML = saveErrorBannerHTML() + topbarHTML() + screenHTML();
+  wireCommon();
+}
+function saveErrorBannerHTML(){
+  if(!state.saveError || state.saveErrorDismissed) return '';
+  return `<div class="save-error-banner">
+    <span>⚠️ このブラウザに学習記録を保存できませんでした。クイズは使えますが、ブラウザを閉じると記録が残らない可能性があります。</span>
+    <button id="btnDismissSaveError" title="閉じる">✕</button>
+  </div>`;
+}
+function topbarHTML(){
+  return `
+  <div class="topbar">
+    <div class="brand">
+      <span class="kr-title">한글 퀴즈</span>
+    </div>
+  </div>`;
+}
+function screenHTML(){
+  switch(state.screen){
+    case 'home': return renderHome();
+    case 'manage': return renderManage();
+    case 'wordSelect': return renderWordSelect();
+    case 'quiz': return renderQuiz();
+    case 'result': return renderResult();
+    default: return '';
+  }
+}
+function escapeHtml(s){ return (s||'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+/* ============================== HOME ============================== */
+function resetControlHTML(){
+  if(state.confirmingReset){
+    return `<span class="reset-confirm">
+      本当に削除しますか？
+      <button class="btn-danger-ghost" id="btnResetYes">削除する</button>
+      <button class="btn-ghost" id="btnResetNo">やめる</button>
+    </span>`;
+  }
+  return `<span class="btn-danger-ghost" id="btnResetProgress">記録をリセット</span>`;
+}
+function backupPanelHTML(){
+  const json = JSON.stringify(state.progress, null, 2);
+  return `
+  <div class="card" style="margin-top:12px;">
+    <h2 class="title" style="font-size:15px;">バックアップ</h2>
+    <p class="desc">下のテキストが現在の学習記録です。必要ならコピーして、別のブラウザや端末へ記録を移すこともできます。</p>
+    <textarea class="backup-textarea" id="backupExport" readonly>${escapeHtml(json)}</textarea>
+    <div class="row" style="margin-top:8px;">
+      <button class="btn" id="btnCopyBackup">コピーする</button>
+      <span id="copyFeedback" style="font-size:12px;color:var(--ink);"></span>
+    </div>
+    <div style="height:16px;"></div>
+    <p class="desc">以前バックアップしたテキストを貼り付けると記録を復元できます（今の記録は上書きされます）。</p>
+    <textarea class="backup-textarea" id="restoreInput" placeholder="ここに貼り付け"></textarea>
+    ${state.confirmingRestore ? `
+      <div class="quiz-exit-confirm" style="margin-top:8px;">
+        <span>今の記録を上書きします。よろしいですか？</span>
+        <span class="quiz-exit-actions">
+          <button class="btn" id="btnRestoreCancel">キャンセル</button>
+          <button class="btn btn-danger" id="btnRestoreConfirm">上書きする</button>
+        </span>
+      </div>
+    ` : `<button class="btn" id="btnRestoreRequest" style="margin-top:8px;">復元する</button>`}
+    <div id="restoreError" style="color:var(--danger);font-size:12px;margin-top:6px;"></div>
+  </div>`;
+}
+function renderHome(){
+  const vC = learnedCount('vowel'), vT = VOWELS.length;
+  const cC = learnedCount('consonant'), cT = CONSONANTS.length;
+  const bC = learnedCount('batchim'), bT = BATCHIM_JAMO.length;
+  const wordTotal = WORDS.length;
+  const agg = aggregateStats(state.progress);
+  const minutes = Math.floor((state.progress.totalTimeMs || 0) / 60000);
+
+  return `
+  <div class="home-stage">
+    <div class="home-inner">
+      <div class="home-stats">
+        <div class="home-stat">
+          <span class="home-stat-label">総回答数</span>
+          <span class="home-stat-number">${agg.total}</span>
+          <span class="home-stat-unit">個</span>
+        </div>
+        <div class="home-stat">
+          <span class="home-stat-label">正答率</span>
+          <span class="home-stat-number">${agg.rate===null ? 0 : agg.rate}</span>
+          <span class="home-stat-unit">％</span>
+        </div>
+        <div class="home-stat">
+          <span class="home-stat-label">学習時間</span>
+          <span class="home-stat-number">${minutes}</span>
+          <span class="home-stat-unit">分</span>
+        </div>
+      </div>
+
+      <div class="home-grid">
+        <div class="mode-card" data-goto="manage" data-cat="vowel">
+          <div class="mode-row">
+            <div class="mode-copy">
+              <div class="mode-kr">모음</div>
+              <div class="mode-jp">母音</div>
+            </div>
+            <div class="mode-count">${vC}/${vT}</div>
+          </div>
+        </div>
+        <div class="mode-card" data-goto="manage" data-cat="consonant">
+          <div class="mode-row">
+            <div class="mode-copy">
+              <div class="mode-kr">자음</div>
+              <div class="mode-jp">子音</div>
+            </div>
+            <div class="mode-count">${cC}/${cT}</div>
+          </div>
+        </div>
+        <div class="mode-card" data-goto="manage" data-cat="batchim">
+          <div class="mode-row">
+            <div class="mode-copy">
+              <div class="mode-kr">받침</div>
+              <div class="mode-jp">パッチム</div>
+            </div>
+            <div class="mode-count">${bC}/${bT}</div>
+          </div>
+        </div>
+        <div class="mode-card" data-goto="wordSelect">
+          <div class="mode-row">
+            <div class="mode-copy">
+              <div class="mode-kr">단어</div>
+              <div class="mode-jp">単語</div>
+            </div>
+            <div class="mode-count">${wordTotal}</div>
+          </div>
+        </div>
+      </div>
+
+      ${agg.total===0 ? `<div class="home-empty-note">クイズに挑戦すると学習記録がここに蓄積されます。</div>` : ''}
+      <div class="home-tools">
+        ${resetControlHTML()}
+      </div>
+    </div>
+  </div>`;
+}
+
+/* ============================== MANAGE (vowel/consonant/batchim) ============================== */
+function renderManage(){
+  const cat = state.category;
+  const meta = CATEGORY_META[cat];
+  const items = meta.items;
+  const learned = state.progress.learned;
+  const checkedItems = items.filter(it=>learned[it.id]);
+  const checkedCount = checkedItems.length;
+
+  const tiles = items.map(it=>{
+    const on = !!learned[it.id];
+    const s = state.progress.stats[it.id];
+    let dotClass = '';
+    if(s && (s.correct+s.wrong) >= 3){
+      const rate = s.correct/(s.correct+s.wrong);
+      dotClass = rate >= 0.7 ? 'strong' : (rate < 0.4 ? 'weak' : '');
+    }
+    return `<div class="item-tile ${on?'checked':''}" data-toggle="${it.id}">
+      ${on ? '<span class="check">✓</span>' : ''}
+      ${dotClass ? `<span class="dot ${dotClass}"></span>` : (s?'<span class="dot"></span>':'')}
+      <span class="kr">${it.kr}</span>
+      ${it.hint ? `<span class="hint">${it.hint}</span>` : ''}
+      ${it.note ? `<span class="note">${it.note}</span>` : ''}
+    </div>`;
+  }).join('');
+
+  let desc;
+  if(cat==='vowel') desc = '覚えた母音にチェックを入れてください。チェックした母音からクイズが出題されます。';
+  else if(cat==='consonant') desc = '覚えた子音にチェックを入れてください。母音と組み合わせた音節（例：가・개・갸…）でクイズが出題されます。';
+  else desc = '覚えたパッチム（終声の文字）にチェックを入れてください。子音・母音と組み合わせた音節でクイズが出題されます。';
+
+  const format = state.formatChoice[cat] || 'char';
+  let wordMatches = [];
+  if(format==='word' && checkedCount>0) wordMatches = buildWordCandidates(cat, checkedItems);
+
+  let startDisabled = checkedCount===0;
+  let startLabel = 'クイズを始める';
+  if(checkedCount===0){
+    startLabel = 'まずは項目をチェックしてください';
+  }else if(format==='word' && wordMatches.length===0){
+    startDisabled = true;
+    startLabel = '該当する単語がありません';
+  }
+
+  return `
+  <div class="manage-shell"><div class="card">
+    <div class="section-topbar"><span class="back-link" id="btnBackHome">← ホームに戻る</span></div>
+    <h2 class="title">${meta.label}を選ぶ</h2>
+    <p class="desc">${desc}</p>
+    <div class="row" style="margin-bottom:6px;">
+      <button class="btn" id="btnCheckAll">全部チェック</button>
+      <button class="btn" id="btnUncheckAll">全部解除</button>
+      <span style="font-size:12px;color:var(--ink-soft);margin-left:auto;">${checkedCount} / ${items.length} 件</span>
+    </div>
+    <div class="item-grid">${tiles}</div>
+    <div class="eyebrow">出題形式</div>
+    <div class="count-select">
+      <button class="btn ${format==='char'?'active':''}" data-format="char">文字のみ</button>
+      <button class="btn ${format==='word'?'active':''}" data-format="word">単語</button>
+    </div>
+    ${format==='word' && checkedCount>0 ? `<p class="desc" style="margin-top:-4px;">チェックした文字だけで作れる単語: <b>${wordMatches.length}</b> 語${cat==='consonant' && checkedCount>1 ? '（組み合わせ語を優先）' : ''}</p>` : ''}
+    <button class="btn btn-primary" id="btnStartQuiz" ${startDisabled?'disabled':''} style="width:100%;">
+      ${startLabel}
+    </button>
+  </div></div>`;
+}
+
+/* ============================== WORD SELECT ============================== */
+function renderWordSelect(){
+  if(!state.wordSelectedThemes){
+    state.wordSelectedThemes = new Set(WORD_THEMES.map(t=>t.id));
+  }
+  const rows = WORD_THEMES.map(t=>{
+    const n = WORDS.filter(w=>w.theme===t.id).length;
+    const on = state.wordSelectedThemes.has(t.id);
+    return `<div class="theme-row ${on?'checked':''}" data-theme="${t.id}">
+      <div class="box"></div>
+      <div class="label">${t.label}</div>
+      <div class="n">${n}語</div>
+    </div>`;
+  }).join('');
+
+  const poolSize = WORDS.filter(w=>state.wordSelectedThemes.has(w.theme)).length;
+  const counts = [5,10,15,20,'all'];
+  const chosen = state.countChoice['word'] || 10;
+  const countBtns = counts.map(c=>{
+    const label = c==='all' ? '全部' : c;
+    return `<button class="btn ${chosen===c?'active':''}" data-count="${c}">${label}</button>`;
+  }).join('');
+
+  return `
+  <div class="word-shell"><div class="card">
+    <div class="section-topbar"><span class="back-link" id="btnBackHome">← ホームに戻る</span></div>
+    <h2 class="title">単語クイズ</h2>
+    <p class="desc">出題したいテーマを選んでください（複数選択可）。</p>
+    <div class="theme-list">${rows}</div>
+    <div class="eyebrow">出題数（選択中 ${poolSize} 語から）</div>
+    <div class="count-select">${countBtns}</div>
+    ${poolSize===0 ? `<div class="empty-note">テーマを1つ以上選んでください。</div>` : ''}
+    <button class="btn btn-primary" id="btnStartWord" ${poolSize===0?'disabled':''} style="width:100%;">クイズを始める</button>
+  </div></div>`;
+}
+
+/* ============================== QUIZ FLOW ============================== */
+// Finds real words (from WORDS + EXTRA_WORDS) that can be fully read using only
+// the checked letters in `checkedItems` for the given category.
+//  - vowel:     every syllable must be silent-ㅇ + a checked vowel, no batchim.
+//  - consonant: every syllable's initial must be a checked consonant OR silent-ㅇ
+//               (ㅇ is a free pass since it tests nothing); at least one syllable
+//               must actually use a checked consonant.
+//  - batchim:   every syllable's final must be a checked batchim OR have no batchim
+//               (free pass); at least one syllable must actually use a checked batchim.
+function buildWordCandidates(cat, checkedItems){
+  const checkedIds = new Set(checkedItems.map(it=>it.id));
+  const rawPool = WORDS.concat(EXTRA_WORDS, CONSONANT_EXTRA_WORDS);
+  // The same Korean word may exist in a theme list and in the letter-practice list.
+  // De-duplicate by spelling so it is never over-represented in a quiz.
+  const seenWords = new Set();
+  const pool = rawPool.filter(w=>{
+    if(seenWords.has(w.kr)) return false;
+    seenWords.add(w.kr);
+    return true;
+  });
+  const matches = [];
+  pool.forEach(w=>{
+    const syll = decomposeWord(w.kr);
+    if(syll.length===0) return;
+    let ok = true;
+    let anyChecked = false;
+    const usedIds = new Set();
+
+    if(cat === 'vowel'){
+      for(const s of syll){
+        if(s.cho !== 'ㅇ' || s.jong !== ''){ ok=false; break; }
+        const vItem = VOWELS.find(v=>v.kr===s.jung);
+        if(!vItem || !checkedIds.has(vItem.id)){ ok=false; break; }
+        usedIds.add(vItem.id);
+      }
+      anyChecked = usedIds.size>0;
+    } else if(cat === 'consonant'){
+      for(const s of syll){
+        if(s.jong !== ''){ ok=false; break; } // keep this mode purely initial-consonant + vowel, no batchim
+        if(s.cho === 'ㅇ'){
+          if(checkedIds.has('c_ng')){ usedIds.add('c_ng'); anyChecked = true; }
+          continue; // silent either way — free pass if ㅇ itself isn't checked
+        }
+        const cItem = CONSONANTS.find(c=>c.kr===s.cho);
+        if(!cItem || !checkedIds.has(cItem.id)){ ok=false; break; }
+        usedIds.add(cItem.id);
+        anyChecked = true;
+      }
+    } else { // batchim
+      for(const s of syll){
+        if(s.jong === '') continue; // no batchim, free pass
+        const jItem = BATCHIM_JAMO.find(j=>j.jong===s.jong);
+        if(!jItem || !checkedIds.has(jItem.id)){ ok=false; break; }
+        usedIds.add(jItem.id);
+        anyChecked = true;
+      }
+    }
+
+    if(ok && anyChecked){
+      matches.push({kr:w.kr, accept:w.roman, meaning:w.meaning, note:null, statIds:Array.from(usedIds), coverage:usedIds.size});
+    }
+  });
+  return matches;
+}
+
+// For multi-consonant study, put words that actually combine more of the checked
+// consonants near the front of the session. Simpler words still remain in the pool.
+function pickLetterWordPool(matches, cat, checkedItems, maxCount){
+  if(cat !== 'consonant' || checkedItems.length <= 1){
+    return shuffle(matches).slice(0, Math.min(maxCount, matches.length));
+  }
+
+  const buckets = new Map();
+  matches.forEach(w=>{
+    const n = Math.max(1, (w.statIds || []).length);
+    if(!buckets.has(n)) buckets.set(n, []);
+    buckets.get(n).push(w);
+  });
+
+  const ordered = [];
+  const maxCoverage = Math.max(...Array.from(buckets.keys()));
+  for(let n=maxCoverage; n>=1; n--){
+    if(buckets.has(n)) ordered.push(...shuffle(buckets.get(n)));
+  }
+  return ordered.slice(0, Math.min(maxCount, ordered.length));
+}
+
+function startCharacterQuiz(cat){
+  const meta = CATEGORY_META[cat];
+  const learnedItems = meta.items.filter(it => state.progress.learned[it.id]);
+  if(learnedItems.length===0) return;
+  const format = state.formatChoice[cat] || 'char';
+
+  let pool;
+  if(format === 'word'){
+    const matches = buildWordCandidates(cat, learnedItems);
+    if(matches.length===0) return;
+    // A slightly longer word session makes the larger vocabulary pool useful.
+    // With multiple consonants selected, combination words are deliberately prioritized.
+    const maxWordCount = cat === 'consonant' ? 30 : 20;
+    pool = pickLetterWordPool(matches, cat, learnedItems, maxWordCount);
+  } else {
+    // Build the full candidate pool of possible questions first, THEN sample from it.
+    // (Sampling checked items directly under-produces: 1 consonant checked would
+    // otherwise mean only 1 possible question, however many were requested.)
+    let candidates = [];
+    if(cat === 'vowel'){
+      candidates = learnedItems.map(it => ({
+        id: it.id, kr: it.kr, accept: it.roman, meaning: null, note: it.note || null, statIds:[it.id]
+      }));
+    } else if(cat === 'consonant'){
+      learnedItems.forEach(c=>{
+        VOWELS.forEach(v=>{
+          const kr = composeHangul(c.kr, v.kr, '');
+          const accept = [];
+          c.syn.forEach(ci=>{ v.roman.forEach(vi=>{ const s = ci+vi; if(!accept.includes(s)) accept.push(s); }); });
+          candidates.push({id:c.id, kr, accept, meaning:null, note:c.note||null, statIds:[c.id]});
+        });
+      });
+    } else { // batchim
+      learnedItems.forEach(j=>{
+        CONSONANTS.forEach(c=>{
+          VOWELS.forEach(v=>{
+            const kr = composeHangul(c.kr, v.kr, j.jong);
+            const accept = [];
+            c.syn.forEach(ci=>{ v.roman.forEach(vi=>{ const s = ci+vi+j.roman; if(!accept.includes(s)) accept.push(s); }); });
+            candidates.push({id:j.id, kr, accept, meaning:null, note:null, statIds:[j.id]});
+          });
+        });
+      });
+    }
+    // Show the full set for thorough coverage rather than an arbitrary fixed count.
+    // Consonant/batchim pools can get very large when several letters are checked
+    // at once, so cap those to keep a single session reasonable; vowel naturally
+    // tops out at 21 so no cap is needed there.
+    let maxCount;
+    if(cat === 'vowel') maxCount = candidates.length;
+    else if(cat === 'consonant') maxCount = Math.min(candidates.length, 40);
+    else maxCount = Math.min(candidates.length, 25); // batchim: cho×jung explodes fast
+    pool = weightedPick(candidates, state.progress.stats, maxCount);
+  }
+
+  state.lastQuizType = 'character';
+  state.lastQuizCategory = cat;
+  launchQuiz(pool);
+}
+function startWordQuiz(){
+  const items = WORDS.filter(w=>state.wordSelectedThemes.has(w.theme));
+  if(items.length===0) return;
+  const count = resolveCount(state.countChoice['word'] || 10, items.length);
+  const pool = weightedPick(items, state.progress.stats, count).map(it=>({
+    kr: it.kr, accept: it.roman, meaning: it.meaning, note:null, statIds:[it.id]
+  }));
+  state.lastQuizType = 'word';
+  launchQuiz(pool);
+}
+function resolveCount(choice, poolLen){
+  if(choice==='all') return poolLen;
+  return Math.min(Number(choice), poolLen);
+}
+function launchQuiz(pool){
+  state.quiz = {pool, idx:0, answered:false, lastCorrect:null, lastInput:'', score:0, answers:[], startTime: Date.now()};
+  state.screen = 'quiz';
+  render();
+}
+function endQuizNow(){
+  const q = state.quiz;
+  if(!q) return;
+  if(q.answers.length === 0){
+    state.screen = 'home';
+    render();
+    return;
+  }
+  finishQuizSession(q);
+  state.screen = 'result';
+  render();
+}
+
+function renderQuiz(){
+  const q = state.quiz;
+  const item = q.pool[q.idx];
+  const isLong = item.kr.length > 3;
+  const inputClass = q.answered ? (q.lastCorrect ? 'ans-correct' : 'ans-wrong') : '';
+  const cardClass = q.answered ? (q.lastCorrect ? 'flash-correct' : 'flash-wrong') : '';
+
+  let meaningLine = '';
+  if(q.answered && item.meaning) meaningLine = item.meaning;
+  else if(q.answered && item.note) meaningLine = item.note;
+
+  let feedback = '';
+  if(q.answered){
+    feedback = q.lastCorrect
+      ? `<div class="feedback-line correct">正解！</div>`
+      : `<div class="feedback-line wrong">正解: ${escapeHtml(item.accept[0])}</div>`;
+  }
+
+  return `
+  <div class="section-topbar"><span class="back-link" id="btnEndQuiz">クイズを終わる</span></div>
+  <div class="quiz-progress">${q.idx+1} / ${q.pool.length} ・ 正解 ${q.score}</div>
+  <div class="quiz-card ${cardClass}">
+    <div class="quiz-kr ${isLong?'long':''}">${item.kr}</div>
+    <div class="quiz-meaning">${meaningLine}</div>
+    <input type="text" id="answerInput" class="answer-input ${inputClass}" placeholder="ローマ字で入力"
+      autocomplete="off" autocapitalize="off" spellcheck="false" ${q.answered?'disabled':''} value="${q.answered?escapeHtml(q.lastInput):''}">
+    ${feedback}
+    ${q.answered ? `<button class="sound-btn" id="btnReplaySound">🔊 もう一度聞く</button>` : ''}
+    <div class="quiz-actions">
+      ${q.answered
+        ? `<button class="btn btn-primary" id="btnNext">${q.idx+1 < q.pool.length ? '次へ' : '結果を見る'}</button>`
+        : `<button class="btn btn-primary" id="btnSubmit">答える</button>`}
+    </div>
+  </div>`;
+}
+
+function submitAnswer(){
+  const q = state.quiz;
+  if(q.answered) return;
+  const input = document.getElementById('answerInput');
+  const val = input ? input.value : '';
+  const item = q.pool[q.idx];
+  const correct = isCorrectAnswer(item.accept, val);
+  q.answered = true;
+  q.lastCorrect = correct;
+  q.lastInput = val;
+  if(correct) q.score++;
+  q.answers.push({kr:item.kr, meaning:item.meaning, input:val, correct, expected:item.accept[0], statIds:item.statIds||[]});
+  render();
+  speakKorean(item.kr);
+  const nextBtn = document.getElementById('btnNext');
+  if(nextBtn) nextBtn.focus();
+}
+function nextQuestion(){
+  const q = state.quiz;
+  if(q.idx+1 < q.pool.length){
+    q.idx++; q.answered=false; q.lastCorrect=null; q.lastInput='';
+    render();
+  }else{
+    finishQuizSession(q);
+    state.screen = 'result';
+    render();
+  }
+}
+
+/* ============================== RESULT ============================== */
+function renderResult(){
+  const q = state.quiz;
+  const rows = q.answers.map((a,i)=>{
+    return `<div class="review-row ${a.correct?'':'wrong'}">
+      <span class="mark">${a.correct?'⭕':'❌'}</span>
+      <span class="rkr">${a.kr}</span>
+      <span class="rmeta">${a.correct ? '' : `あなた: <b>${escapeHtml(a.input||'(未回答)')}</b> → 正解: <b>${escapeHtml(a.expected)}</b>`}${a.meaning?` ・ ${a.meaning}`:''}</span>
+      <button class="review-sound-btn" data-speak-idx="${i}" title="発音を聞く">🔊</button>
+    </div>`;
+  }).join('');
+
+  return `
+  <div class="result-shell"><div class="card">
+    <div class="score-hero">
+      <div class="num">${q.score} / ${q.answers.length}</div>
+      <div class="lbl">正解</div>
+    </div>
+    <div class="review-list">${rows}</div>
+    <div class="footer-actions">
+      <button class="btn btn-primary" id="btnRetry" style="flex:1;">もう一度</button>
+      <button class="btn" id="btnBackHome" style="flex:1;">ホームに戻る</button>
+    </div>
+  </div></div>`;
+}
+
+/* ============================== EVENT WIRING ============================== */
+function wireCommon(){
+  const dismissErrBtn = document.getElementById('btnDismissSaveError');
+  if(dismissErrBtn) dismissErrBtn.addEventListener('click', ()=>{ state.saveErrorDismissed = true; render(); });
+
+  const resetBtn = document.getElementById('btnResetProgress');
+  if(resetBtn) resetBtn.addEventListener('click', ()=>{ state.confirmingReset = true; render(); });
+  const resetYes = document.getElementById('btnResetYes');
+  if(resetYes) resetYes.addEventListener('click', resetProgress);
+  const resetNo = document.getElementById('btnResetNo');
+  if(resetNo) resetNo.addEventListener('click', ()=>{ state.confirmingReset = false; render(); });
+
+
+  document.querySelectorAll('[data-goto]').forEach(el=>{
+    el.addEventListener('click', ()=>{
+      const dest = el.getAttribute('data-goto');
+      if(dest==='manage'){ state.category = el.getAttribute('data-cat'); state.screen='manage'; }
+      else if(dest==='wordSelect'){ state.screen='wordSelect'; }
+      render();
+    });
+  });
+
+  const backHome = document.getElementById('btnBackHome');
+  if(backHome) backHome.addEventListener('click', ()=>{ state.screen='home'; render(); });
+
+  // manage screen
+  document.querySelectorAll('[data-toggle]').forEach(el=>{
+    el.addEventListener('click', ()=>{
+      const id = el.getAttribute('data-toggle');
+      state.progress.learned[id] = !state.progress.learned[id];
+      scheduleSave();
+      render();
+    });
+  });
+  const checkAll = document.getElementById('btnCheckAll');
+  if(checkAll) checkAll.addEventListener('click', ()=>{
+    CATEGORY_META[state.category].items.forEach(it=> state.progress.learned[it.id]=true);
+    saveProgress(state.progress); render();
+  });
+  const uncheckAll = document.getElementById('btnUncheckAll');
+  if(uncheckAll) uncheckAll.addEventListener('click', ()=>{
+    CATEGORY_META[state.category].items.forEach(it=> state.progress.learned[it.id]=false);
+    saveProgress(state.progress); render();
+  });
+
+  // count selector (word theme quiz only, now that manage screens use format instead)
+  document.querySelectorAll('[data-count]').forEach(el=>{
+    el.addEventListener('click', ()=>{
+      const raw = el.getAttribute('data-count');
+      state.countChoice['word'] = raw==='all' ? 'all' : Number(raw);
+      render();
+    });
+  });
+  // format selector (manage screens: 文字のみ／単語)
+  document.querySelectorAll('[data-format]').forEach(el=>{
+    el.addEventListener('click', ()=>{
+      state.formatChoice[state.category] = el.getAttribute('data-format');
+      render();
+    });
+  });
+
+  const startQuizBtn = document.getElementById('btnStartQuiz');
+  if(startQuizBtn) startQuizBtn.addEventListener('click', ()=> startCharacterQuiz(state.category));
+  const startWordBtn = document.getElementById('btnStartWord');
+  if(startWordBtn) startWordBtn.addEventListener('click', startWordQuiz);
+
+  document.querySelectorAll('[data-theme]').forEach(el=>{
+    el.addEventListener('click', ()=>{
+      const t = el.getAttribute('data-theme');
+      if(state.wordSelectedThemes.has(t)) state.wordSelectedThemes.delete(t);
+      else state.wordSelectedThemes.add(t);
+      render();
+    });
+  });
+
+  // quiz screen
+  const submitBtn = document.getElementById('btnSubmit');
+  if(submitBtn) submitBtn.addEventListener('click', submitAnswer);
+  const answerInput = document.getElementById('answerInput');
+  if(answerInput) answerInput.focus();
+  const nextBtn = document.getElementById('btnNext');
+  if(nextBtn) nextBtn.addEventListener('click', nextQuestion);
+  const replayBtn = document.getElementById('btnReplaySound');
+  if(replayBtn) replayBtn.addEventListener('click', ()=>{
+    const q = state.quiz; if(q) speakKorean(q.pool[q.idx].kr);
+  });
+  const endQuizBtn = document.getElementById('btnEndQuiz');
+  if(endQuizBtn) endQuizBtn.addEventListener('click', endQuizNow);
+
+  // result screen
+  const retryBtn = document.getElementById('btnRetry');
+  if(retryBtn) retryBtn.addEventListener('click', ()=>{
+    if(state.lastQuizType==='word') startWordQuiz();
+    else if(state.lastQuizType==='character') startCharacterQuiz(state.lastQuizCategory);
+  });
+  document.querySelectorAll('[data-speak-idx]').forEach(el=>{
+    el.addEventListener('click', ()=>{
+      const i = Number(el.getAttribute('data-speak-idx'));
+      const a = state.quiz && state.quiz.answers[i];
+      if(a) speakKorean(a.kr);
+    });
+  });
+}
+
+/* ============================== KEYBOARD FLOW ============================== */
+// Single global handler (attached once) so Enter both submits and advances,
+// without stacking duplicate listeners on every re-render.
+document.addEventListener('keydown', function(e){
+  if(e.key !== 'Enter') return;
+  if(state.screen !== 'quiz' || !state.quiz) return;
+  e.preventDefault();
+  if(state.quiz.answered) nextQuestion();
+  else submitAnswer();
+});
+
+init();
+</script>
+</body>
+</html>
